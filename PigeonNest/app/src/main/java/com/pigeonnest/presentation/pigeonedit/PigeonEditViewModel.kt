@@ -151,25 +151,29 @@ class PigeonEditViewModel @Inject constructor(
         notes: String?
     ) {
         viewModelScope.launch {
-            val result = savePigeonUseCase(
-                SavePigeonUseCase.Params(
-                    id = id,
-                    name = name,
-                    ringNumber = ringNumber,
-                    color = _selectedColor.value,
-                    gender = _selectedGender.value,
-                    birthDate = _birthDate.value,
-                    loftId = _loftId.value,
-                    cageNumber = _cageNumber.value,
-                    notes = notes,
-                    photoUri = _photoUri.value,
-                    photoPath = _pigeon.value?.photoPath,
-                    fatherId = _fatherId.value,
-                    motherId = _motherId.value,
-                    mateId = _mateId.value
+            try {
+                val result = savePigeonUseCase(
+                    SavePigeonUseCase.Params(
+                        id = id,
+                        name = name,
+                        ringNumber = ringNumber,
+                        color = _selectedColor.value,
+                        gender = _selectedGender.value,
+                        birthDate = _birthDate.value,
+                        loftId = _loftId.value,
+                        cageNumber = _cageNumber.value,
+                        notes = notes,
+                        photoUri = _photoUri.value,
+                        photoPath = _pigeon.value?.photoPath,
+                        fatherId = _fatherId.value,
+                        motherId = _motherId.value,
+                        mateId = _mateId.value
+                    )
                 )
-            )
-            _saveResult.value = result
+                _saveResult.value = result
+            } catch (e: Exception) {
+                _saveResult.value = Result.failure(e)
+            }
         }
     }
 

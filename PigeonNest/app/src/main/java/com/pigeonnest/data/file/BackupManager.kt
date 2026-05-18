@@ -184,8 +184,10 @@ class BackupManager @Inject constructor(
 
             // 恢复照片（保留目录结构）
             val photosDir = File(tempDir, "photos")
-            if (photosDir.exists()) {
+            val importedPhotoCount = if (photosDir.exists()) {
                 photoStorage.importPhotosFromDirectory(photosDir)
+            } else {
+                0
             }
 
             // 恢复 SharedPreferences
@@ -211,7 +213,7 @@ class BackupManager @Inject constructor(
 
             Result.success(
                 "导入成功：${backupData.data.lofts.size} 鸽棚, ${backupData.data.pigeons.size} 鸽子, " +
-                "${backupData.data.family_relations.size} 关系, ${backupData.data.pigeon_photos.size} 照片记录, " +
+                "${backupData.data.family_relations.size} 关系, ${importedPhotoCount} 照片文件, " +
                 "${backupData.data.location_history.size} 位置记录"
             )
         } catch (e: Exception) {

@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Log
 import android.widget.ImageView
 import com.bumptech.glide.Glide
 import com.pigeonnest.R
@@ -18,6 +19,10 @@ import javax.inject.Singleton
 class PhotoStorageManager @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
+    companion object {
+        const val TAG = "PhotoStorage"
+    }
+
     private val photosDir: File by lazy {
         File(context.filesDir, "photos").apply { mkdirs() }
     }
@@ -33,6 +38,7 @@ class PhotoStorageManager @Inject constructor(
 
         context.contentResolver.openInputStream(sourceUri)?.use { input ->
             val bitmap = BitmapFactory.decodeStream(input)
+                ?: throw IllegalArgumentException("无法解码图片，格式可能不受支持")
             val compressed = compressBitmap(bitmap, maxSizeKB)
             destFile.outputStream().use {
                 compressed.compress(Bitmap.CompressFormat.JPEG, 90, it)
@@ -41,7 +47,8 @@ class PhotoStorageManager @Inject constructor(
                 bitmap.recycle()
                 compressed.recycle()
             }
-        }
+            Log.d(TAG, "照片已保存: ${destFile.absolutePath} (${destFile.length()} bytes)")
+        } ?: throw IllegalArgumentException("无法读取照片文件")
 
         destFile.absolutePath
     }
@@ -73,16 +80,19 @@ class PhotoStorageManager @Inject constructor(
     }
 
     fun getAllPhotoFiles(): List<File> {
-        return photosDir.walkTopDown()
+        val files = photosDir.walkTopDown()
             .filter { it.isFile && it.extension.lowercase() in listOf("jpg", "jpeg", "png") }
             .toList()
+        Log.d(TAG, "扫描到 ${files.size} 个照片文件")
+        return files
     }
 
     suspend fun deletePigeonPhotos(pigeonId: String) = withContext(Dispatchers.IO) {
         File(photosDir, pigeonId).deleteRecursively()
     }
 
-    suspend fun importPhotosFromDirectory(sourceDir: File) = withContext(Dispatchers.IO) {
+    suspend fun importPhotosFromDirectory(sourceDir: File): Int = withContext(Dispatchers.IO) {
+        var count = 0
         sourceDir.walkTopDown()
             .filter { it.isFile }
             .forEach { sourceFile ->
@@ -90,6 +100,10 @@ class PhotoStorageManager @Inject constructor(
                 val destFile = File(photosDir, relativePath)
                 destFile.parentFile?.mkdirs()
                 sourceFile.copyTo(destFile, overwrite = true)
+                count++
+                Log.d(TAG, "导入照片: $relativePath -> ${destFile.absolutePath}")
             }
+        Log.d(TAG, "共导入 $count 个照片文件")
+        count
     }
 }
