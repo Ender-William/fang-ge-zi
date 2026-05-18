@@ -3,10 +3,8 @@ package com.pigeonnest.data.file
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
-import android.os.Environment
-import androidx.core.content.FileProvider
+import android.util.Log
 import com.google.gson.GsonBuilder
-import com.google.gson.reflect.TypeToken
 import com.pigeonnest.data.local.dao.FamilyRelationDao
 import com.pigeonnest.data.local.dao.LocationHistoryDao
 import com.pigeonnest.data.local.dao.LoftDao
@@ -61,6 +59,7 @@ class BackupManager @Inject constructor(
         const val BACKUP_FILE_PREFIX = "pigeonnest_backup_"
         const val BACKUP_FILE_EXTENSION = ".zip"
         private val PREFS_NAMES = listOf("settings", "family_names")
+        const val TAG = "BackupManager"
     }
 
     suspend fun exportBackup(targetUri: Uri): Result<String> = withContext(Dispatchers.IO) {
@@ -96,6 +95,8 @@ class BackupManager @Inject constructor(
             val jsonString = gson.toJson(backupData)
 
             val photosDir = File(context.filesDir, "photos")
+            val photoFiles = photoStorage.getAllPhotoFiles()
+            Log.d(TAG, "找到 ${photoFiles.size} 个照片文件待导出")
 
             context.contentResolver.openOutputStream(targetUri)?.use { output ->
                 ZipOutputStream(output).use { zos ->
@@ -103,11 +104,13 @@ class BackupManager @Inject constructor(
                     zos.write(jsonString.toByteArray(Charsets.UTF_8))
                     zos.closeEntry()
 
-                    // 照片保留完整目录结构导出
-                    photoStorage.getAllPhotoFiles().forEach { photoFile ->
+                    // 照片保留完整目录结构导出，ZIP 路径统一使用正斜杠
+                    photoFiles.forEach { photoFile ->
                         if (photoFile.exists()) {
                             val relativePath = photoFile.relativeTo(photosDir).path
+                                .replace("\\", "/")
                             val entryName = "photos/$relativePath"
+                            Log.d(TAG, "导出照片: $entryName")
                             zos.putNextEntry(ZipEntry(entryName))
                             photoFile.inputStream().use { it.copyTo(zos) }
                             zos.closeEntry()
@@ -116,8 +119,12 @@ class BackupManager @Inject constructor(
                 }
             } ?: return@withContext Result.failure(IllegalStateException("无法写入目标文件"))
 
-            Result.success("备份成功：${lofts.size} 鸽棚, ${pigeons.size} 鸽子, ${familyRelations.size} 关系, ${pigeonPhotos.size} 照片")
+            Result.success(
+                "备份成功：${lofts.size} 鸽棚, ${pigeons.size} 鸽子, " +
+                "${familyRelations.size} 关系, ${photoFiles.size} 照片文件"
+            )
         } catch (e: Exception) {
+            Log.e(TAG, "导出失败", e)
             Result.failure(e)
         }
     }
@@ -133,7 +140,9 @@ class BackupManager @Inject constructor(
                 ZipInputStream(input).use { zis ->
                     var entry: ZipEntry?
                     while (zis.nextEntry.also { entry = it } != null) {
-                        val entryFile = File(tempDir, entry!!.name)
+                        // ZIP 条目名统一将反斜杠转为正斜杠，确保跨平台兼容
+                        val safeName = entry!!.name.replace("\\", "/")
+                        val entryFile = File(tempDir, safeName)
                         entryFile.parentFile?.mkdirs()
                         entryFile.outputStream().use { output ->
                             zis.copyTo(output)
@@ -202,10 +211,11 @@ class BackupManager @Inject constructor(
 
             Result.success(
                 "导入成功：${backupData.data.lofts.size} 鸽棚, ${backupData.data.pigeons.size} 鸽子, " +
-                "${backupData.data.family_relations.size} 关系, ${backupData.data.pigeon_photos.size} 照片, " +
+                "${backupData.data.family_relations.size} 关系, ${backupData.data.pigeon_photos.size} 照片记录, " +
                 "${backupData.data.location_history.size} 位置记录"
             )
         } catch (e: Exception) {
+            Log.e(TAG, "导入失败", e)
             Result.failure(e)
         }
     }

@@ -44,10 +44,13 @@ class SavePigeonUseCase @Inject constructor(
 
         val loft = params.loftId?.let { loftRepository.getLoftById(it) }
 
+        // 统一生成鸽子 ID，避免照片目录与鸽子记录 ID 不一致
+        val pigeonId = params.id ?: UUID.randomUUID().toString()
+
         // 处理照片：如果有新照片则保存并获取路径，否则保留原路径
         val photoPath = if (params.photoUri != null) {
             photoStorage.savePigeonPhoto(
-                pigeonId = params.id ?: UUID.randomUUID().toString(),
+                pigeonId = pigeonId,
                 sourceUri = params.photoUri
             )
         } else {
@@ -55,7 +58,7 @@ class SavePigeonUseCase @Inject constructor(
         }
 
         val pigeon = Pigeon(
-            id = params.id ?: UUID.randomUUID().toString(),
+            id = pigeonId,
             ringNumber = params.ringNumber.trim(),
             name = params.name.trim(),
             color = params.color?.trim(),
