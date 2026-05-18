@@ -75,11 +75,11 @@ class SettingsViewModel @Inject constructor(
         _recreateNeeded.value = false
     }
 
-    fun exportBackup() {
+    fun exportBackup(targetUri: Uri) {
         viewModelScope.launch {
-            val result = backupManager.exportBackup()
+            val result = backupManager.exportBackup(targetUri)
             result.fold(
-                onSuccess = { _toastMessage.value = "备份已导出到 Documents/PigeonNest/backups" },
+                onSuccess = { _toastMessage.value = it },
                 onFailure = { _toastMessage.value = "备份失败: ${it.message}" }
             )
         }

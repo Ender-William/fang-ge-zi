@@ -63,16 +63,8 @@ class BackupManager @Inject constructor(
         private val PREFS_NAMES = listOf("settings", "family_names")
     }
 
-    suspend fun exportBackup(): Result<Uri> = withContext(Dispatchers.IO) {
+    suspend fun exportBackup(targetUri: Uri): Result<String> = withContext(Dispatchers.IO) {
         try {
-            val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.CHINA).format(Date())
-            val backupDir = File(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS),
-                "PigeonNest/backups"
-            ).apply { mkdirs() }
-
-            val backupFile = File(backupDir, "${BACKUP_FILE_PREFIX}${timestamp}${BACKUP_FILE_EXTENSION}")
-
             val lofts = loftDao.getAll()
             val pigeons = pigeonDao.getAll()
             val familyRelations = familyRelationDao.getAll()
@@ -105,30 +97,26 @@ class BackupManager @Inject constructor(
 
             val photosDir = File(context.filesDir, "photos")
 
-            ZipOutputStream(backupFile.outputStream()).use { zos ->
-                zos.putNextEntry(ZipEntry("data.json"))
-                zos.write(jsonString.toByteArray(Charsets.UTF_8))
-                zos.closeEntry()
+            context.contentResolver.openOutputStream(targetUri)?.use { output ->
+                ZipOutputStream(output).use { zos ->
+                    zos.putNextEntry(ZipEntry("data.json"))
+                    zos.write(jsonString.toByteArray(Charsets.UTF_8))
+                    zos.closeEntry()
 
-                // 照片保留完整目录结构导出
-                photoStorage.getAllPhotoFiles().forEach { photoFile ->
-                    if (photoFile.exists()) {
-                        val relativePath = photoFile.relativeTo(photosDir).path
-                        val entryName = "photos/$relativePath"
-                        zos.putNextEntry(ZipEntry(entryName))
-                        photoFile.inputStream().use { it.copyTo(zos) }
-                        zos.closeEntry()
+                    // 照片保留完整目录结构导出
+                    photoStorage.getAllPhotoFiles().forEach { photoFile ->
+                        if (photoFile.exists()) {
+                            val relativePath = photoFile.relativeTo(photosDir).path
+                            val entryName = "photos/$relativePath"
+                            zos.putNextEntry(ZipEntry(entryName))
+                            photoFile.inputStream().use { it.copyTo(zos) }
+                            zos.closeEntry()
+                        }
                     }
                 }
-            }
+            } ?: return@withContext Result.failure(IllegalStateException("无法写入目标文件"))
 
-            val uri = FileProvider.getUriForFile(
-                context,
-                "${context.packageName}.fileprovider",
-                backupFile
-            )
-
-            Result.success(uri)
+            Result.success("备份成功：${lofts.size} 鸽棚, ${pigeons.size} 鸽子, ${familyRelations.size} 关系, ${pigeonPhotos.size} 照片")
         } catch (e: Exception) {
             Result.failure(e)
         }

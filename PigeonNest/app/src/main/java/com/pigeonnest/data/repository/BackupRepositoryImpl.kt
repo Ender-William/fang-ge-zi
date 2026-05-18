@@ -16,8 +16,8 @@ class BackupRepositoryImpl @Inject constructor(
     private val backupManager: BackupManager
 ) : BackupRepository {
 
-    override suspend fun exportBackup(destinationUri: Uri?): Result<Uri> {
-        return backupManager.exportBackup()
+    override suspend fun exportBackup(destinationUri: Uri): Result<String> {
+        return backupManager.exportBackup(destinationUri)
     }
 
     override suspend fun importBackup(backupUri: Uri, mode: ImportMode): Result<ImportResult> {

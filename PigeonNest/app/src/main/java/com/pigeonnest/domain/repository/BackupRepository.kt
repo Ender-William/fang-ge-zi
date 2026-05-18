@@ -19,7 +19,7 @@ data class ImportResult(
 enum class ImportMode { REPLACE, MERGE }
 
 interface BackupRepository {
-    suspend fun exportBackup(destinationUri: Uri? = null): Result<Uri>
+    suspend fun exportBackup(destinationUri: Uri): Result<String>
     suspend fun importBackup(backupUri: Uri, mode: ImportMode): Result<ImportResult>
     fun getBackupHistory(): Flow<List<BackupInfo>>
 }

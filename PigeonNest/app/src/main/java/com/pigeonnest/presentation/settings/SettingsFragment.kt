@@ -37,6 +37,14 @@ class SettingsFragment : Fragment() {
         } ?: Toast.makeText(requireContext(), "未选择文件", Toast.LENGTH_SHORT).show()
     }
 
+    private val createBackupLauncher = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("application/zip")
+    ) { uri: Uri? ->
+        uri?.let {
+            viewModel.exportBackup(it)
+        } ?: Toast.makeText(requireContext(), "未选择保存位置", Toast.LENGTH_SHORT).show()
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -63,7 +71,9 @@ class SettingsFragment : Fragment() {
         }
 
         binding.buttonExport.setOnClickListener {
-            viewModel.exportBackup()
+            val timestamp = java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.CHINA)
+                .format(java.util.Date())
+            createBackupLauncher.launch("pigeonnest_backup_${timestamp}.zip")
         }
 
         binding.buttonImport.setOnClickListener {
