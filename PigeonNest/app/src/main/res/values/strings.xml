@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">鸽巢管家</string>
+
+    <!-- Navigation -->
+    <string name="nav_pigeons">我的鸽子</string>
+    <string name="nav_family">家族图谱</string>
+    <string name="nav_settings">设置</string>
+
+    <!-- Pigeon List -->
+    <string name="search_hint">搜索鸽子脚环号或名字...</string>
+    <string name="empty_pigeons">您还没有添加鸽子</string>
+    <string name="empty_pigeons_hint">点击下方的添加按钮，记录您的第一只鸽子吧</string>
+    <string name="add_pigeon">添加鸽子</string>
+
+    <!-- Pigeon Detail -->
+    <string name="pigeon_detail_title">鸽子详情</string>
+    <string name="location_info">位置信息</string>
+    <string name="family_relation">家族关系</string>
+    <string name="notes">备注</string>
+    <string name="edit">编辑</string>
+    <string name="delete">删除</string>
+    <string name="view_family_graph">查看家族图谱</string>
+    <string name="change_location">变更位置</string>
+
+    <!-- Pigeon Edit -->
+    <string name="edit_pigeon_title">编辑鸽子信息</string>
+    <string name="name">鸽子名字</string>
+    <string name="name_hint">例如: 小白</string>
+    <string name="ring_number">脚环号</string>
+    <string name="ring_number_hint">例如: 2024-BJ-001</string>
+    <string name="color">羽色</string>
+    <string name="color_hint">例如: 雨点、灰、红</string>
+    <string name="gender">性别</string>
+    <string name="male">雄</string>
+    <string name="female">雌</string>
+    <string name="unknown">未知</string>
+    <string name="notes_hint">添加备注信息...</string>
+    <string name="save">保存</string>
+
+    <!-- Loft -->
+    <string name="loft_management">鸽舍管理</string>
+    <string name="add_loft">添加鸽舍</string>
+    <string name="empty_lofts">还没有鸽舍</string>
+    <string name="empty_lofts_hint">点击添加按钮创建第一个鸽舍</string>
+
+    <!-- Family Graph -->
+    <string name="family_graph_title">家族图谱</string>
+    <string name="zoom_in">放大</string>
+    <string name="zoom_out">缩小</string>
+    <string name="center">居中</string>
+
+    <!-- Settings -->
+    <string name="settings_title">设置</string>
+    <string name="appearance">外观设置</string>
+    <string name="font_size">字体大小</string>
+    <string name="font_size_standard">标准</string>
+    <string name="font_size_large">大</string>
+    <string name="font_size_extra_large">超大</string>
+    <string name="high_contrast">高对比度模式</string>
+    <string name="data_management">数据管理</string>
+    <string name="export_data">导出数据</string>
+    <string name="import_data">导入数据</string>
+    <string name="about">关于</string>
+    <string name="about_app">关于鸽巢管家</string>
+    <string name="about_content">版本 1.0.0\n\n专为养鸽爱好者设计\n\n用心记录每一羽，温暖守护鸽家族</string>
+
+    <!-- Dialogs -->
+    <string name="confirm_delete">确认删除？</string>
+    <string name="confirm_delete_message">删除后将无法恢复。</string>
+    <string name="confirm">确认删除</string>
+    <string name="cancel">先不删</string>
+    <string name="loft_delete_warning">如果其中有鸽子将无法删除。</string>
+
+    <!-- Location -->
+    <string name="select_loft">选择鸽舍</string>
+    <string name="confirm_location_change">确认变更位置</string>
+
+    <!-- Toast -->
+    <string name="save_success">保存成功</string>
+    <string name="save_failed">保存失败</string>
+    <string name="delete_success">删除成功</string>
+    <string name="delete_failed">删除失败</string>
+    <string name="backup_exported">备份已导出</string>
+    <string name="backup_failed">备份失败</string>
+</resources>

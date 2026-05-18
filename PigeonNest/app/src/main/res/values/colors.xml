@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary Colors -->
+    <color name="primary">#E8751A</color>
+    <color name="primary_light">#FFAE66</color>
+    <color name="primary_dark">#A64B0F</color>
+    <color name="primary_50">#FFF5EB</color>
+
+    <!-- Secondary Colors -->
+    <color name="secondary">#7A7A6E</color>
+    <color name="secondary_light">#B5B5A8</color>
+    <color name="secondary_dark">#2E2E28</color>
+
+    <!-- Background & Surface -->
+    <color name="background">#FAF7F2</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_variant">#FFFDF9</color>
+    <color name="selected_background">#FFF5EB</color>
+
+    <!-- Text Colors -->
+    <color name="text_primary">#2E2E28</color>
+    <color name="text_secondary">#5E5E54</color>
+    <color name="text_tertiary">#7A7A6E</color>
+    <color name="text_on_primary">#FFFFFF</color>
+
+    <!-- Accent Colors -->
+    <color name="male_blue">#5B8DB8</color>
+    <color name="female_pink">#C47A74</color>
+    <color name="neutral_gray">#8A8A7A</color>
+    <color name="success">#4A8C6F</color>
+    <color name="error">#C4544A</color>
+    <color name="warning">#D4A03D</color>
+
+    <!-- Graph Colors -->
+    <color name="graph_node_bg">#FFFFFF</color>
+    <color name="graph_node_border">#D1D1C5</color>
+    <color name="graph_node_selected">#E8751A</color>
+    <color name="graph_edge_normal">#B5B5A8</color>
+    <color name="graph_edge_mate">#D4A03D</color>
+    <color name="graph_text_primary">#2E2E28</color>
+
+    <!-- UI Colors -->
+    <color name="white">#FFFFFF</color>
+    <color name="divider">#E8E8E0</color>
+    <color name="input_border">#D1D1C5</color>
+    <color name="input_border_focused">#E8751A</color>
+
+    <!-- Bottom Navigation -->
+    <color name="bottom_nav_selected">#E8751A</color>
+    <color name="bottom_nav_unselected">#7A7A6E</color>
+    <color name="bottom_nav_color">#7A7A6E</color>
+</resources>

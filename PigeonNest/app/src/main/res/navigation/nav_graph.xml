@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/pigeonListFragment">
+
+    <fragment
+        android:id="@+id/pigeonListFragment"
+        android:name="com.pigeonnest.presentation.pigeonlist.PigeonListFragment"
+        android:label="我的鸽子"
+        tools:layout="@layout/fragment_pigeon_list">
+        <action
+            android:id="@+id/action_pigeonList_to_pigeonDetail"
+            app:destination="@id/pigeonDetailFragment" />
+        <action
+            android:id="@+id/action_pigeonList_to_pigeonEdit"
+            app:destination="@id/pigeonEditFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/pigeonDetailFragment"
+        android:name="com.pigeonnest.presentation.pigeondetail.PigeonDetailFragment"
+        android:label="鸽子详情"
+        tools:layout="@layout/fragment_pigeon_detail">
+        <argument
+            android:name="pigeonId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_pigeonDetail_to_pigeonEdit"
+            app:destination="@id/pigeonEditFragment" />
+        <action
+            android:id="@+id/action_pigeonDetail_to_familyGraph"
+            app:destination="@id/familyGraphFragment" />
+        <action
+            android:id="@+id/action_pigeonDetail_to_locationSet"
+            app:destination="@id/locationSetFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/pigeonEditFragment"
+        android:name="com.pigeonnest.presentation.pigeonedit.PigeonEditFragment"
+        android:label="编辑鸽子"
+        tools:layout="@layout/fragment_pigeon_edit">
+        <argument
+            android:name="pigeonId"
+            app:argType="string"
+            app:nullable="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/familyGraphFragment"
+        android:name="com.pigeonnest.presentation.familygraph.FamilyGraphFragment"
+        android:label="家族图谱"
+        tools:layout="@layout/fragment_family_graph">
+        <argument
+            android:name="pigeonId"
+            app:argType="string"
+            app:nullable="true" />
+        <action
+            android:id="@+id/action_familyGraph_to_pigeonDetail"
+            app:destination="@id/pigeonDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.pigeonnest.presentation.settings.SettingsFragment"
+        android:label="设置"
+        tools:layout="@layout/fragment_settings" />
+
+    <fragment
+        android:id="@+id/loftListFragment"
+        android:name="com.pigeonnest.presentation.loftmanage.LoftListFragment"
+        android:label="鸽舍管理"
+        tools:layout="@layout/fragment_loft_list">
+        <action
+            android:id="@+id/action_loftList_to_locationSet"
+            app:destination="@id/locationSetFragment" />
+        <action
+            android:id="@+id/action_loftList_to_loftDetail"
+            app:destination="@id/loftDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/loftDetailFragment"
+        android:name="com.pigeonnest.presentation.loftmanage.LoftDetailFragment"
+        android:label="鸽舍详情"
+        tools:layout="@layout/fragment_loft_detail">
+        <argument
+            android:name="loftId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_loftDetail_to_pigeonDetail"
+            app:destination="@id/pigeonDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/locationSetFragment"
+        android:name="com.pigeonnest.presentation.locationset.LocationSetFragment"
+        android:label="选择鸽舍"
+        tools:layout="@layout/fragment_location_set">
+        <argument
+            android:name="pigeonId"
+            app:argType="string" />
+    </fragment>
+
+</navigation>
