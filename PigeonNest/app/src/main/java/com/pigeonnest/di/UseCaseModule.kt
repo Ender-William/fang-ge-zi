@@ -13,6 +13,7 @@ import com.pigeonnest.domain.usecase.pigeon.DeletePigeonUseCase
 import com.pigeonnest.domain.usecase.pigeon.GetPigeonDetailUseCase
 import com.pigeonnest.domain.usecase.pigeon.GetPigeonListUseCase
 import com.pigeonnest.domain.usecase.pigeon.SavePigeonUseCase
+import com.pigeonnest.data.file.PhotoStorageManager
 import com.pigeonnest.domain.usecase.pigeon.SearchPigeonsUseCase
 import dagger.Module
 import dagger.Provides
@@ -50,9 +51,10 @@ object UseCaseModule {
     fun provideSavePigeonUseCase(
         pigeonRepository: PigeonRepository,
         loftRepository: LoftRepository,
-        updateFamilyRelationUseCase: UpdateFamilyRelationUseCase
+        updateFamilyRelationUseCase: UpdateFamilyRelationUseCase,
+        photoStorage: PhotoStorageManager
     ): SavePigeonUseCase {
-        return SavePigeonUseCase(pigeonRepository, loftRepository, updateFamilyRelationUseCase)
+        return SavePigeonUseCase(pigeonRepository, loftRepository, updateFamilyRelationUseCase, photoStorage)
     }
 
     @Provides

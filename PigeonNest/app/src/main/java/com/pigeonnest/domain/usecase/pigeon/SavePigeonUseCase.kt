@@ -1,6 +1,7 @@
 package com.pigeonnest.domain.usecase.pigeon
 
 import android.net.Uri
+import com.pigeonnest.data.file.PhotoStorageManager
 import com.pigeonnest.domain.model.Gender
 import com.pigeonnest.domain.model.Pigeon
 import com.pigeonnest.domain.model.PigeonStatus
@@ -13,7 +14,8 @@ import javax.inject.Inject
 class SavePigeonUseCase @Inject constructor(
     private val pigeonRepository: PigeonRepository,
     private val loftRepository: LoftRepository,
-    private val updateFamilyRelationUseCase: UpdateFamilyRelationUseCase
+    private val updateFamilyRelationUseCase: UpdateFamilyRelationUseCase,
+    private val photoStorage: PhotoStorageManager
 ) {
     data class Params(
         val id: String? = null,
@@ -28,6 +30,7 @@ class SavePigeonUseCase @Inject constructor(
         val status: PigeonStatus = PigeonStatus.ACTIVE,
         val notes: String? = null,
         val photoUri: Uri? = null,
+        val photoPath: String? = null,
         val fatherId: String? = null,
         val motherId: String? = null,
         val mateId: String? = null
@@ -41,6 +44,16 @@ class SavePigeonUseCase @Inject constructor(
 
         val loft = params.loftId?.let { loftRepository.getLoftById(it) }
 
+        // 处理照片：如果有新照片则保存并获取路径，否则保留原路径
+        val photoPath = if (params.photoUri != null) {
+            photoStorage.savePigeonPhoto(
+                pigeonId = params.id ?: UUID.randomUUID().toString(),
+                sourceUri = params.photoUri
+            )
+        } else {
+            params.photoPath
+        }
+
         val pigeon = Pigeon(
             id = params.id ?: UUID.randomUUID().toString(),
             ringNumber = params.ringNumber.trim(),
@@ -49,7 +62,7 @@ class SavePigeonUseCase @Inject constructor(
             gender = params.gender,
             birthDate = params.birthDate,
             entryDate = params.entryDate ?: System.currentTimeMillis(),
-            photoPath = null,
+            photoPath = photoPath,
             loft = loft,
             cageNumber = params.cageNumber?.trim(),
             status = params.status,
@@ -66,10 +79,6 @@ class SavePigeonUseCase @Inject constructor(
                 motherId = params.motherId,
                 mateId = params.mateId
             )
-
-            if (params.photoUri != null) {
-                pigeonRepository.addPigeonPhoto(pigeon.id, params.photoUri)
-            }
         }
 
         return saveResult

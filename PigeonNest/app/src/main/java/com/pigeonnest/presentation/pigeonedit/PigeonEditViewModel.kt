@@ -163,6 +163,7 @@ class PigeonEditViewModel @Inject constructor(
                     cageNumber = _cageNumber.value,
                     notes = notes,
                     photoUri = _photoUri.value,
+                    photoPath = _pigeon.value?.photoPath,
                     fatherId = _fatherId.value,
                     motherId = _motherId.value,
                     mateId = _mateId.value

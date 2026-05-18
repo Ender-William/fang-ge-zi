@@ -330,6 +330,15 @@ class PigeonEditFragment : Fragment() {
                             binding.buttonSelectLoft.text = loft.name
                         }
 
+                        // 加载原照片预览
+                        it.photoPath?.let { path ->
+                            val file = java.io.File(path)
+                            if (file.exists()) {
+                                binding.imagePreview.setImageURI(android.net.Uri.fromFile(file))
+                                binding.imagePreview.visibility = View.VISIBLE
+                            }
+                        }
+
                         viewModel.onPigeonLoaded(it)
                         updateFamilyRelationButtons()
                     }
