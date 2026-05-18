@@ -111,7 +111,13 @@ class PigeonRepositoryImpl @Inject constructor(
     override suspend fun savePigeon(pigeon: Pigeon): Result<String> {
         return try {
             val entity = pigeonMapper.toEntity(pigeon).copy(updatedAt = System.currentTimeMillis())
-            pigeonDao.insert(entity)
+            val existing = pigeonDao.getById(pigeon.id)
+            if (existing != null) {
+                // 编辑已有鸽子：使用 update，避免 REPLACE 触发外键级联删除
+                pigeonDao.update(entity)
+            } else {
+                pigeonDao.insert(entity)
+            }
             Result.success(pigeon.id)
         } catch (e: Exception) {
             Result.failure(e)
