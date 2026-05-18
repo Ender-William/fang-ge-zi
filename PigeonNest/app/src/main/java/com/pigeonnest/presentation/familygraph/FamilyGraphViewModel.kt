@@ -8,6 +8,7 @@ import com.pigeonnest.domain.repository.PigeonRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,11 +24,7 @@ class FamilyGraphViewModel @Inject constructor(
     fun loadGraph(pigeonId: String) {
         viewModelScope.launch {
             try {
-                val pigeon = pigeonRepository.getPigeonById(pigeonId).let { flow ->
-                    var p: com.pigeonnest.domain.model.Pigeon? = null
-                    flow.collect { p = it }
-                    p
-                }
+                val pigeon = pigeonRepository.getPigeonById(pigeonId).firstOrNull()
 
                 if (pigeon == null) {
                     _graphData.value = Result.failure(Exception("鸽子不存在"))

@@ -4,7 +4,7 @@ import android.graphics.RectF
 
 enum class EdgeType { PARENT_CHILD, MATE }
 
-data class GraphNode(
+class GraphNode(
     val pigeonId: String,
     val pigeonBrief: PigeonBrief,
     var x: Float = 0f,
@@ -22,6 +22,17 @@ data class GraphNode(
         const val VERTICAL_GAP = 120f
         const val MATE_GAP = 40f
     }
+
+    // 只基于 pigeonId，避免循环引用导致 hashCode 无限递归
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is GraphNode) return false
+        return pigeonId == other.pigeonId
+    }
+
+    override fun hashCode(): Int = pigeonId.hashCode()
+
+    override fun toString(): String = "GraphNode($pigeonId)"
 }
 
 data class GraphEdge(
