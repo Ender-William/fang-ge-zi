@@ -112,7 +112,7 @@ class SettingsFragment : Fragment() {
 
     private fun showAboutDialog() {
         AlertDialog.Builder(requireContext(), R.style.ElderlyDialogTheme)
-            .setTitle("关于鸽巢管家")
+            .setTitle("关于放鸽子")
             .setMessage("版本 1.0.0\n\n专为养鸽爱好者设计\n\n用心记录每一羽，温暖守护鸽家族")
             .setPositiveButton("确定", null)
             .show()

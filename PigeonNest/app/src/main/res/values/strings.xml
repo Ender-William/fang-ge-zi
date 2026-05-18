@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">鸽巢管家</string>
+    <string name="app_name">放鸽子</string>
 
     <!-- Navigation -->
     <string name="nav_pigeons">我的鸽子</string>
@@ -62,7 +62,7 @@
     <string name="export_data">导出数据</string>
     <string name="import_data">导入数据</string>
     <string name="about">关于</string>
-    <string name="about_app">关于鸽巢管家</string>
+    <string name="about_app">关于放鸽子</string>
     <string name="about_content">版本 1.0.0\n\n专为养鸽爱好者设计\n\n用心记录每一羽，温暖守护鸽家族</string>
 
     <!-- Dialogs -->
