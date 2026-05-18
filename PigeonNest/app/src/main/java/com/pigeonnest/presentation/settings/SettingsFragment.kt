@@ -1,6 +1,7 @@
 package com.pigeonnest.presentation.settings
 
 import android.os.Bundle
+import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +13,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.pigeonnest.R
+import com.pigeonnest.databinding.DialogAboutBinding
 import com.pigeonnest.databinding.FragmentSettingsBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -111,9 +113,11 @@ class SettingsFragment : Fragment() {
     }
 
     private fun showAboutDialog() {
+        val dialogBinding = DialogAboutBinding.inflate(LayoutInflater.from(requireContext()))
+        dialogBinding.textGithub.movementMethod = LinkMovementMethod.getInstance()
         AlertDialog.Builder(requireContext(), R.style.ElderlyDialogTheme)
             .setTitle("关于放鸽子")
-            .setMessage("版本 1.0.0\n\n专为养鸽爱好者设计\n\n用心记录每一羽，温暖守护鸽家族")
+            .setView(dialogBinding.root)
             .setPositiveButton("确定", null)
             .show()
     }
