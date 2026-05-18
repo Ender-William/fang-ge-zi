@@ -4,6 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -11,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.pigeonnest.R
 import com.pigeonnest.databinding.FragmentFamilyListBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -48,6 +52,9 @@ class FamilyListFragment : Fragment() {
                 val action = FamilyListFragmentDirections
                     .actionFamilyListToFamilyGraph(family.rootPigeonId)
                 findNavController().navigate(action)
+            },
+            onEditClick = { family ->
+                showEditFamilyNameDialog(family)
             }
         )
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
@@ -72,6 +79,27 @@ class FamilyListFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun showEditFamilyNameDialog(family: com.pigeonnest.domain.model.FamilyGroup) {
+        val editText = EditText(requireContext()).apply {
+            setText(family.customName ?: family.displayName)
+            hint = "输入家族名称"
+        }
+        AlertDialog.Builder(requireContext(), R.style.ElderlyDialogTheme)
+            .setTitle("编辑家族名称")
+            .setView(editText)
+            .setPositiveButton("保存") { _, _ ->
+                val name = editText.text.toString().trim()
+                viewModel.setCustomFamilyName(family.rootPigeonId, name)
+                Toast.makeText(requireContext(), "家族名称已更新", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("取消", null)
+            .setNeutralButton("恢复默认") { _, _ ->
+                viewModel.setCustomFamilyName(family.rootPigeonId, null)
+                Toast.makeText(requireContext(), "已恢复默认名称", Toast.LENGTH_SHORT).show()
+            }
+            .show()
     }
 
     override fun onDestroyView() {

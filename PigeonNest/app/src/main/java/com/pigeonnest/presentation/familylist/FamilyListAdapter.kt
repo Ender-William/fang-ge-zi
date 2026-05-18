@@ -17,7 +17,8 @@ class FamilyDiffCallback : DiffUtil.ItemCallback<FamilyGroup>() {
 }
 
 class FamilyListAdapter(
-    private val onItemClick: (FamilyGroup) -> Unit
+    private val onItemClick: (FamilyGroup) -> Unit,
+    private val onEditClick: (FamilyGroup) -> Unit
 ) : ListAdapter<FamilyGroup, FamilyListAdapter.ViewHolder>(FamilyDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -40,6 +41,7 @@ class FamilyListAdapter(
             binding.textColors.text = "品种: ${family.colorDisplay}"
             binding.textStats.text = "共 ${family.totalCount} 羽 · 雄 ${family.maleCount} · 雌 ${family.femaleCount}"
             binding.root.setOnClickListener { onItemClick(family) }
+            binding.buttonEdit.setOnClickListener { onEditClick(family) }
         }
     }
 }

@@ -8,13 +8,14 @@ data class FamilyGroup(
     val mateColor: String? = null,
     val totalCount: Int = 0,
     val maleCount: Int = 0,
-    val femaleCount: Int = 0
+    val femaleCount: Int = 0,
+    val customName: String? = null
 ) {
     val displayName: String
-        get() = if (matePigeonName != null) {
-            "${rootPigeonName} & ${matePigeonName}"
-        } else {
-            rootPigeonName
+        get() = when {
+            !customName.isNullOrBlank() -> customName
+            matePigeonName != null -> "${rootPigeonName} & ${matePigeonName}"
+            else -> rootPigeonName
         }
 
     val colorDisplay: String
