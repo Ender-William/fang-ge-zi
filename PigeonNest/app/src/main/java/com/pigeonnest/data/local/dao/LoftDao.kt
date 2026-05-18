@@ -15,6 +15,9 @@ interface LoftDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(loft: LoftEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(lofts: List<LoftEntity>)
+
     @Update
     suspend fun update(loft: LoftEntity)
 

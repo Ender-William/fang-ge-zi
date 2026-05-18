@@ -1,15 +1,19 @@
 package com.pigeonnest.data.file
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Environment
 import androidx.core.content.FileProvider
 import com.google.gson.GsonBuilder
+import com.google.gson.reflect.TypeToken
 import com.pigeonnest.data.local.dao.FamilyRelationDao
+import com.pigeonnest.data.local.dao.LocationHistoryDao
 import com.pigeonnest.data.local.dao.LoftDao
 import com.pigeonnest.data.local.dao.PigeonDao
 import com.pigeonnest.data.local.dao.PigeonPhotoDao
 import com.pigeonnest.data.local.entity.FamilyRelationEntity
+import com.pigeonnest.data.local.entity.LocationHistoryEntity
 import com.pigeonnest.data.local.entity.LoftEntity
 import com.pigeonnest.data.local.entity.PigeonEntity
 import com.pigeonnest.data.local.entity.PigeonPhotoEntity
@@ -30,14 +34,16 @@ data class BackupData(
     val backup_version: Int,
     val backup_date: Long,
     val app_version: String,
-    val data: BackupContent
+    val data: BackupContent,
+    val preferences: Map<String, Map<String, Any?>> = emptyMap()
 )
 
 data class BackupContent(
     val lofts: List<LoftEntity>,
     val pigeons: List<PigeonEntity>,
     val family_relations: List<FamilyRelationEntity> = emptyList(),
-    val pigeon_photos: List<PigeonPhotoEntity> = emptyList()
+    val pigeon_photos: List<PigeonPhotoEntity> = emptyList(),
+    val location_history: List<LocationHistoryEntity> = emptyList()
 )
 
 @Singleton
@@ -47,12 +53,14 @@ class BackupManager @Inject constructor(
     private val pigeonDao: PigeonDao,
     private val familyRelationDao: FamilyRelationDao,
     private val pigeonPhotoDao: PigeonPhotoDao,
+    private val locationHistoryDao: LocationHistoryDao,
     private val photoStorage: PhotoStorageManager
 ) {
     companion object {
-        const val BACKUP_VERSION = 1
+        const val BACKUP_VERSION = 2
         const val BACKUP_FILE_PREFIX = "pigeonnest_backup_"
         const val BACKUP_FILE_EXTENSION = ".zip"
+        private val PREFS_NAMES = listOf("settings", "family_names")
     }
 
     suspend fun exportBackup(): Result<Uri> = withContext(Dispatchers.IO) {
@@ -69,6 +77,14 @@ class BackupManager @Inject constructor(
             val pigeons = pigeonDao.getAll()
             val familyRelations = familyRelationDao.getAll()
             val pigeonPhotos = pigeonPhotoDao.getAll()
+            val locationHistory = locationHistoryDao.getAll()
+
+            // 导出所有 SharedPreferences
+            val prefsMap = mutableMapOf<String, Map<String, Any?>>()
+            PREFS_NAMES.forEach { name ->
+                val sp = context.getSharedPreferences(name, Context.MODE_PRIVATE)
+                prefsMap[name] = sp.all
+            }
 
             val backupData = BackupData(
                 backup_version = BACKUP_VERSION,
@@ -78,20 +94,27 @@ class BackupManager @Inject constructor(
                     lofts = lofts,
                     pigeons = pigeons,
                     family_relations = familyRelations,
-                    pigeon_photos = pigeonPhotos
-                )
+                    pigeon_photos = pigeonPhotos,
+                    location_history = locationHistory
+                ),
+                preferences = prefsMap
             )
 
-            val jsonString = GsonBuilder().setPrettyPrinting().create().toJson(backupData)
+            val gson = GsonBuilder().setPrettyPrinting().create()
+            val jsonString = gson.toJson(backupData)
+
+            val photosDir = File(context.filesDir, "photos")
 
             ZipOutputStream(backupFile.outputStream()).use { zos ->
                 zos.putNextEntry(ZipEntry("data.json"))
                 zos.write(jsonString.toByteArray(Charsets.UTF_8))
                 zos.closeEntry()
 
+                // 照片保留完整目录结构导出
                 photoStorage.getAllPhotoFiles().forEach { photoFile ->
                     if (photoFile.exists()) {
-                        val entryName = "photos/${photoFile.name}"
+                        val relativePath = photoFile.relativeTo(photosDir).path
+                        val entryName = "photos/$relativePath"
                         zos.putNextEntry(ZipEntry(entryName))
                         photoFile.inputStream().use { it.copyTo(zos) }
                         zos.closeEntry()
@@ -145,26 +168,55 @@ class BackupManager @Inject constructor(
                 )
             }
 
-            // REPLACE mode: clear existing data and insert backup data
-            loftDao.deleteAll()
-            pigeonDao.deleteAll()
-            familyRelationDao.deleteAll()
+            // 使用事务模式：先清空再插入
+            // 注意：由于外键约束，需要按正确顺序操作
+            // 先清空从表，再清空主表
+            locationHistoryDao.deleteAll()
             pigeonPhotoDao.deleteAll()
+            familyRelationDao.deleteAll()
+            pigeonDao.deleteAll()
+            loftDao.deleteAll()
 
-            backupData.data.lofts.forEach { loftDao.insert(it) }
-            backupData.data.pigeons.forEach { pigeonDao.insert(it) }
-            backupData.data.family_relations.forEach { familyRelationDao.insert(it) }
-            backupData.data.pigeon_photos.forEach { pigeonPhotoDao.insert(it) }
+            // 插入主表
+            loftDao.insertAll(backupData.data.lofts)
+            pigeonDao.insertAll(backupData.data.pigeons)
+            // 插入从表
+            familyRelationDao.insertAll(backupData.data.family_relations)
+            pigeonPhotoDao.insertAll(backupData.data.pigeon_photos)
+            locationHistoryDao.insertAll(backupData.data.location_history)
 
-            // Copy photos
+            // 恢复照片（保留目录结构）
             val photosDir = File(tempDir, "photos")
             if (photosDir.exists()) {
                 photoStorage.importPhotosFromDirectory(photosDir)
             }
 
+            // 恢复 SharedPreferences
+            backupData.preferences.forEach { (name, values) ->
+                val sp = context.getSharedPreferences(name, Context.MODE_PRIVATE)
+                val editor = sp.edit()
+                editor.clear()
+                values.forEach { (key, value) ->
+                    when (value) {
+                        is String -> editor.putString(key, value)
+                        is Int -> editor.putInt(key, value)
+                        is Long -> editor.putLong(key, value)
+                        is Float -> editor.putFloat(key, value)
+                        is Boolean -> editor.putBoolean(key, value)
+                        is Set<*> -> @Suppress("UNCHECKED_CAST") editor.putStringSet(key, value as Set<String>)
+                        null -> editor.remove(key)
+                    }
+                }
+                editor.apply()
+            }
+
             tempDir.deleteRecursively()
 
-            Result.success("导入成功：${backupData.data.lofts.size} 鸽棚, ${backupData.data.pigeons.size} 鸽子, ${backupData.data.family_relations.size} 关系, ${backupData.data.pigeon_photos.size} 照片")
+            Result.success(
+                "导入成功：${backupData.data.lofts.size} 鸽棚, ${backupData.data.pigeons.size} 鸽子, " +
+                "${backupData.data.family_relations.size} 关系, ${backupData.data.pigeon_photos.size} 照片, " +
+                "${backupData.data.location_history.size} 位置记录"
+            )
         } catch (e: Exception) {
             Result.failure(e)
         }

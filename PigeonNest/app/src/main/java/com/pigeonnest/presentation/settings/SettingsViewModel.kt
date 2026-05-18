@@ -2,6 +2,7 @@ package com.pigeonnest.presentation.settings
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pigeonnest.data.file.BackupManager
@@ -34,6 +35,9 @@ class SettingsViewModel @Inject constructor(
 
     private val _recreateNeeded = MutableStateFlow(false)
     val recreateNeeded: StateFlow<Boolean> = _recreateNeeded
+
+    private val _importSuccess = MutableStateFlow(false)
+    val importSuccess: StateFlow<Boolean> = _importSuccess
 
     private fun loadSettings(): AppSettings {
         val fontSize = prefs.getInt("font_size", 0)
@@ -75,10 +79,27 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val result = backupManager.exportBackup()
             result.fold(
-                onSuccess = { _toastMessage.value = "备份已导出" },
+                onSuccess = { _toastMessage.value = "备份已导出到 Documents/PigeonNest/backups" },
                 onFailure = { _toastMessage.value = "备份失败: ${it.message}" }
             )
         }
+    }
+
+    fun importBackup(uri: Uri) {
+        viewModelScope.launch {
+            val result = backupManager.importBackup(uri)
+            result.fold(
+                onSuccess = { message ->
+                    _toastMessage.value = "$message\n请重启应用以完成恢复"
+                    _importSuccess.value = true
+                },
+                onFailure = { _toastMessage.value = "导入失败: ${it.message}" }
+            )
+        }
+    }
+
+    fun clearImportSuccess() {
+        _importSuccess.value = false
     }
 
     fun clearToast() {

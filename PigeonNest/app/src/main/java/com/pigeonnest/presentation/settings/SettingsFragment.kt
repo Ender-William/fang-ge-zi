@@ -1,11 +1,14 @@
 package com.pigeonnest.presentation.settings
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -25,6 +28,14 @@ class SettingsFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: SettingsViewModel by viewModels()
+
+    private val pickBackupLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            viewModel.importBackup(it)
+        } ?: Toast.makeText(requireContext(), "未选择文件", Toast.LENGTH_SHORT).show()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -56,7 +67,7 @@ class SettingsFragment : Fragment() {
         }
 
         binding.buttonImport.setOnClickListener {
-            Toast.makeText(requireContext(), "请选择备份文件", Toast.LENGTH_SHORT).show()
+            pickBackupLauncher.launch("application/zip")
         }
 
         binding.buttonAbout.setOnClickListener {
@@ -83,7 +94,7 @@ class SettingsFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.toastMessage.collect { message ->
                     message?.let {
-                        Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
                         viewModel.clearToast()
                     }
                 }
@@ -100,6 +111,17 @@ class SettingsFragment : Fragment() {
                 }
             }
         }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.importSuccess.collect { success ->
+                    if (success) {
+                        viewModel.clearImportSuccess()
+                        showImportRestartDialog()
+                    }
+                }
+            }
+        }
     }
 
     private fun showFontSizeDialog() {
@@ -109,6 +131,19 @@ class SettingsFragment : Fragment() {
             .setItems(sizes) { _, which ->
                 viewModel.setFontSize(which)
             }
+            .show()
+    }
+
+    private fun showImportRestartDialog() {
+        AlertDialog.Builder(requireContext(), R.style.ElderlyDialogTheme)
+            .setTitle("导入完成")
+            .setMessage("数据已成功恢复。应用需要重启才能完全生效。")
+            .setPositiveButton("立即重启") { _, _ ->
+                val intent = requireActivity().intent
+                requireActivity().finish()
+                startActivity(intent)
+            }
+            .setNegativeButton("稍后手动重启", null)
             .show()
     }
 
