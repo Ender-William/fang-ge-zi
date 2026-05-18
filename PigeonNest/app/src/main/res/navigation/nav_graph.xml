@@ -49,9 +49,19 @@
     </fragment>
 
     <fragment
+        android:id="@+id/familyListFragment"
+        android:name="com.pigeonnest.presentation.familylist.FamilyListFragment"
+        android:label="家族图谱"
+        tools:layout="@layout/fragment_family_list">
+        <action
+            android:id="@+id/action_familyList_to_familyGraph"
+            app:destination="@id/familyGraphFragment" />
+    </fragment>
+
+    <fragment
         android:id="@+id/familyGraphFragment"
         android:name="com.pigeonnest.presentation.familygraph.FamilyGraphFragment"
-        android:label="家族图谱"
+        android:label="家族图谱详情"
         tools:layout="@layout/fragment_family_graph">
         <argument
             android:name="pigeonId"
