@@ -100,6 +100,9 @@ dependencies {
     // CircleImageView
     implementation("de.hdodenhof:circleimageview:3.1.0")
 
+    // PhotoView (图片缩放查看)
+    implementation("com.github.chrisbanes:PhotoView:2.3.0")
+
     // Testing
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")

@@ -17,6 +17,7 @@ import androidx.navigation.fragment.navArgs
 import com.pigeonnest.R
 import com.pigeonnest.data.file.PhotoStorageManager
 import com.pigeonnest.databinding.FragmentPigeonDetailBinding
+import com.pigeonnest.presentation.common.ImageViewerDialogFragment
 import com.pigeonnest.domain.model.Gender
 import com.pigeonnest.domain.model.Pigeon
 import dagger.hilt.android.AndroidEntryPoint
@@ -159,6 +160,14 @@ class PigeonDetailFragment : Fragment() {
             binding.imageAvatar,
             pigeon.photoPath
         )
+
+        // 点击头像放大查看
+        pigeon.photoPath?.let { path ->
+            binding.imageAvatar.setOnClickListener {
+                ImageViewerDialogFragment.newInstance(path, pigeon.name)
+                    .show(parentFragmentManager, "image_viewer")
+            }
+        }
 
         val infoBuilder = StringBuilder()
         infoBuilder.append("品种: ${pigeon.color ?: "未记录"}")
