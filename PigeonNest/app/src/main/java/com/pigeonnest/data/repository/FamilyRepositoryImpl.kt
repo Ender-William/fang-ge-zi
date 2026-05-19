@@ -179,7 +179,7 @@ class FamilyRepositoryImpl @Inject constructor(
             pigeonId = pigeonId,
             pigeonBrief = entity.toBrief()
         )
-        if (currentDepth >= maxDepth) return node
+        if (maxDepth > 0 && currentDepth >= maxDepth) return node
 
         val relation = familyRelationDao.getByPigeonId(pigeonId)
         relation?.fatherId?.let { fid ->

@@ -29,6 +29,7 @@ class FamilyGraphViewModel @Inject constructor(
     companion object {
         const val MIN_DEPTH = 1
         const val MAX_DEPTH = 20
+        const val UNLIMITED = 0
     }
 
     fun loadGraph(pigeonId: String) {
@@ -37,7 +38,7 @@ class FamilyGraphViewModel @Inject constructor(
     }
 
     fun setDepth(depth: Int) {
-        val clamped = depth.coerceIn(MIN_DEPTH, MAX_DEPTH)
+        val clamped = if (depth < MIN_DEPTH) UNLIMITED else depth.coerceIn(MIN_DEPTH, MAX_DEPTH)
         if (_currentDepth.value != clamped) {
             _currentDepth.value = clamped
             reload()
@@ -45,11 +46,19 @@ class FamilyGraphViewModel @Inject constructor(
     }
 
     fun increaseDepth() {
-        setDepth(_currentDepth.value + 1)
+        if (_currentDepth.value == UNLIMITED) {
+            setDepth(MIN_DEPTH)
+        } else {
+            setDepth(_currentDepth.value + 1)
+        }
     }
 
     fun decreaseDepth() {
-        setDepth(_currentDepth.value - 1)
+        if (_currentDepth.value <= MIN_DEPTH) {
+            setDepth(UNLIMITED)
+        } else {
+            setDepth(_currentDepth.value - 1)
+        }
     }
 
     private fun reload() {

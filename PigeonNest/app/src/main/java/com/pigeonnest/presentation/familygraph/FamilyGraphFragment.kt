@@ -77,7 +77,7 @@ class FamilyGraphFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.currentDepth.collect { depth ->
-                    binding.textDepthValue.text = depth.toString()
+                    binding.textDepthValue.text = if (depth == FamilyGraphViewModel.UNLIMITED) "全部" else "${depth}代"
                     updateDepthButtonsState(depth)
                 }
             }
@@ -117,8 +117,8 @@ class FamilyGraphFragment : Fragment() {
     }
 
     private fun updateDepthButtonsState(depth: Int) {
-        binding.buttonDepthDecrease.isEnabled = depth > FamilyGraphViewModel.MIN_DEPTH
-        binding.buttonDepthIncrease.isEnabled = depth < FamilyGraphViewModel.MAX_DEPTH
+        binding.buttonDepthDecrease.isEnabled = true
+        binding.buttonDepthIncrease.isEnabled = depth != FamilyGraphViewModel.MAX_DEPTH
     }
 
     override fun onDestroyView() {
