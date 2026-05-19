@@ -63,7 +63,7 @@
     <string name="import_data">导入数据</string>
     <string name="about">关于</string>
     <string name="about_app">关于放鸽子</string>
-    <string name="about_content">版本 1.0.0\n\n专为养鸽爱好者设计\n\n用心记录每一羽，温暖守护鸽家族</string>
+    <string name="about_content">版本 1.0.1\n\n专为养鸽爱好者设计\n\n用心记录每一羽，温暖守护鸽家族</string>
 
     <!-- Dialogs -->
     <string name="confirm_delete">确认删除？</string>
