@@ -9,9 +9,10 @@ object GraphLayoutManager {
 
     suspend fun buildGraphFromPigeon(
         centerPigeon: Pigeon,
-        familyRepository: FamilyRepository
+        familyRepository: FamilyRepository,
+        depth: Int = 10
     ): LayoutResult {
-        val graphData = familyRepository.getGraphData(centerPigeon.id, 3)
+        val graphData = familyRepository.getGraphData(centerPigeon.id, depth)
         val layoutManager = GraphLayoutEngine()
         return layoutManager.calculateLayout(graphData)
     }

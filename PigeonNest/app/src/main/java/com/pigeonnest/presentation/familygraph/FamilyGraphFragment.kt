@@ -73,6 +73,15 @@ class FamilyGraphFragment : Fragment() {
                 }
             }
         }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.currentDepth.collect { depth ->
+                    binding.textDepthValue.text = depth.toString()
+                    updateDepthButtonsState(depth)
+                }
+            }
+        }
     }
 
     private fun setupListeners() {
@@ -88,6 +97,14 @@ class FamilyGraphFragment : Fragment() {
             binding.graphView.resetView()
         }
 
+        binding.buttonDepthDecrease.setOnClickListener {
+            viewModel.decreaseDepth()
+        }
+
+        binding.buttonDepthIncrease.setOnClickListener {
+            viewModel.increaseDepth()
+        }
+
         binding.buttonSelectPigeon.setOnClickListener {
             findNavController().navigate(R.id.pigeonListFragment)
         }
@@ -97,6 +114,11 @@ class FamilyGraphFragment : Fragment() {
                 .actionFamilyGraphToPigeonDetail(pigeonId)
             findNavController().navigate(action)
         }
+    }
+
+    private fun updateDepthButtonsState(depth: Int) {
+        binding.buttonDepthDecrease.isEnabled = depth > FamilyGraphViewModel.MIN_DEPTH
+        binding.buttonDepthIncrease.isEnabled = depth < FamilyGraphViewModel.MAX_DEPTH
     }
 
     override fun onDestroyView() {

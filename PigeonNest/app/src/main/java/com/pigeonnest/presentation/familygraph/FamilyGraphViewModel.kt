@@ -21,7 +21,39 @@ class FamilyGraphViewModel @Inject constructor(
     private val _graphData = MutableStateFlow<Result<LayoutResult>?>(null)
     val graphData: StateFlow<Result<LayoutResult>?> = _graphData
 
+    private val _currentDepth = MutableStateFlow(10)
+    val currentDepth: StateFlow<Int> = _currentDepth
+
+    private var currentPigeonId: String? = null
+
+    companion object {
+        const val MIN_DEPTH = 1
+        const val MAX_DEPTH = 20
+    }
+
     fun loadGraph(pigeonId: String) {
+        currentPigeonId = pigeonId
+        reload()
+    }
+
+    fun setDepth(depth: Int) {
+        val clamped = depth.coerceIn(MIN_DEPTH, MAX_DEPTH)
+        if (_currentDepth.value != clamped) {
+            _currentDepth.value = clamped
+            reload()
+        }
+    }
+
+    fun increaseDepth() {
+        setDepth(_currentDepth.value + 1)
+    }
+
+    fun decreaseDepth() {
+        setDepth(_currentDepth.value - 1)
+    }
+
+    private fun reload() {
+        val pigeonId = currentPigeonId ?: return
         viewModelScope.launch {
             try {
                 val pigeon = pigeonRepository.getPigeonById(pigeonId).firstOrNull()
@@ -33,7 +65,8 @@ class FamilyGraphViewModel @Inject constructor(
 
                 val layoutResult = GraphLayoutManager.buildGraphFromPigeon(
                     pigeon,
-                    familyRepository
+                    familyRepository,
+                    _currentDepth.value
                 )
                 _graphData.value = Result.success(layoutResult)
             } catch (e: Exception) {
