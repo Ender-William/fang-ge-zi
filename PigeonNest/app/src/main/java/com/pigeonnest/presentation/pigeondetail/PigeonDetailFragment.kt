@@ -86,6 +86,26 @@ class PigeonDetailFragment : Fragment() {
                 }
             }
         }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.deleteResult.collect { result ->
+                    result?.let {
+                        if (it.isSuccess) {
+                            Toast.makeText(requireContext(), "删除成功", Toast.LENGTH_SHORT).show()
+                            findNavController().navigateUp()
+                        } else {
+                            Toast.makeText(
+                                requireContext(),
+                                it.exceptionOrNull()?.message ?: "删除失败",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                        viewModel.clearDeleteResult()
+                    }
+                }
+            }
+        }
     }
 
     private fun setupListeners() {
@@ -101,6 +121,10 @@ class PigeonDetailFragment : Fragment() {
 
         binding.buttonDelete.setOnClickListener {
             viewModel.pigeon.value?.let { showDeleteConfirmDialog(it) }
+        }
+
+        binding.buttonEditFamily.setOnClickListener {
+            showEditFamilyDialog()
         }
 
         binding.buttonViewFamily.setOnClickListener {
@@ -297,7 +321,6 @@ class PigeonDetailFragment : Fragment() {
             .setMessage("删除后将无法恢复。鸽子「${pigeon.name}」及其家族关系都将被删除。")
             .setPositiveButton("确认删除") { _, _ ->
                 viewModel.deletePigeon(pigeon.id)
-                findNavController().navigateUp()
             }
             .setNegativeButton("先不删", null)
             .show()

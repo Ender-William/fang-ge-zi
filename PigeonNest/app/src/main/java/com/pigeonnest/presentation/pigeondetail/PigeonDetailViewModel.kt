@@ -38,6 +38,9 @@ class PigeonDetailViewModel @Inject constructor(
     private val _updateResult = MutableStateFlow<Result<Unit>?>(null)
     val updateResult: StateFlow<Result<Unit>?> = _updateResult
 
+    private val _deleteResult = MutableStateFlow<Result<Unit>?>(null)
+    val deleteResult: StateFlow<Result<Unit>?> = _deleteResult
+
     fun loadPigeon(pigeonId: String) {
         viewModelScope.launch {
             getPigeonDetailUseCase(pigeonId).collectLatest {
@@ -92,7 +95,12 @@ class PigeonDetailViewModel @Inject constructor(
 
     fun deletePigeon(pigeonId: String) {
         viewModelScope.launch {
-            deletePigeonUseCase(pigeonId)
+            val result = deletePigeonUseCase(pigeonId)
+            _deleteResult.value = result
         }
+    }
+
+    fun clearDeleteResult() {
+        _deleteResult.value = null
     }
 }

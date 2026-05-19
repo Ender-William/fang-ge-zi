@@ -2,6 +2,7 @@ package com.pigeonnest.data.repository
 
 import android.net.Uri
 import com.pigeonnest.data.file.PhotoStorageManager
+import com.pigeonnest.data.local.dao.FamilyRelationDao
 import com.pigeonnest.data.local.dao.LocationHistoryDao
 import com.pigeonnest.data.local.dao.PigeonDao
 import com.pigeonnest.data.local.dao.PigeonPhotoDao
@@ -26,6 +27,7 @@ class PigeonRepositoryImpl @Inject constructor(
     private val pigeonDao: PigeonDao,
     private val pigeonPhotoDao: PigeonPhotoDao,
     private val locationHistoryDao: LocationHistoryDao,
+    private val familyRelationDao: FamilyRelationDao,
     private val photoStorage: PhotoStorageManager,
     private val pigeonMapper: PigeonMapper,
     private val loftRepository: LoftRepository
@@ -126,7 +128,14 @@ class PigeonRepositoryImpl @Inject constructor(
 
     override suspend fun deletePigeon(pigeonId: String): Result<Unit> {
         return try {
+            // 1. 清理家族关系中所有对该鸽子的引用
+            familyRelationDao.clearFatherReference(pigeonId)
+            familyRelationDao.clearMotherReference(pigeonId)
+            familyRelationDao.clearMateReference(pigeonId)
+            familyRelationDao.deleteByPigeonId(pigeonId)
+            // 2. 删除照片
             photoStorage.deletePigeonPhotos(pigeonId)
+            // 3. 软删除鸽子
             pigeonDao.softDelete(pigeonId)
             Result.success(Unit)
         } catch (e: Exception) {

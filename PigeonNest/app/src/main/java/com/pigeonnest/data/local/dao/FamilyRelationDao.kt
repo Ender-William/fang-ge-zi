@@ -28,6 +28,15 @@ interface FamilyRelationDao {
     @Query("DELETE FROM family_relations WHERE pigeon_id = :pigeonId")
     suspend fun deleteByPigeonId(pigeonId: String)
 
+    @Query("UPDATE family_relations SET father_id = NULL WHERE father_id = :pigeonId")
+    suspend fun clearFatherReference(pigeonId: String)
+
+    @Query("UPDATE family_relations SET mother_id = NULL WHERE mother_id = :pigeonId")
+    suspend fun clearMotherReference(pigeonId: String)
+
+    @Query("UPDATE family_relations SET mate_id = NULL WHERE mate_id = :pigeonId")
+    suspend fun clearMateReference(pigeonId: String)
+
     @Query("DELETE FROM family_relations")
     suspend fun deleteAll()
 
