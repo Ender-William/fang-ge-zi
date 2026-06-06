@@ -31,6 +31,8 @@ class SavePigeonUseCase @Inject constructor(
         val notes: String? = null,
         val photoUri: Uri? = null,
         val photoPath: String? = null,
+        val eyePhotoUri: Uri? = null,
+        val eyePhotoPath: String? = null,
         val fatherId: String? = null,
         val motherId: String? = null,
         val mateId: String? = null
@@ -57,6 +59,16 @@ class SavePigeonUseCase @Inject constructor(
             params.photoPath
         }
 
+        // 处理眼睛照片
+        val eyePhotoPath = if (params.eyePhotoUri != null) {
+            photoStorage.savePigeonPhoto(
+                pigeonId = pigeonId,
+                sourceUri = params.eyePhotoUri
+            )
+        } else {
+            params.eyePhotoPath
+        }
+
         val pigeon = Pigeon(
             id = pigeonId,
             ringNumber = params.ringNumber.trim(),
@@ -66,6 +78,7 @@ class SavePigeonUseCase @Inject constructor(
             birthDate = params.birthDate,
             entryDate = params.entryDate ?: System.currentTimeMillis(),
             photoPath = photoPath,
+            eyePhotoPath = eyePhotoPath,
             loft = loft,
             cageNumber = params.cageNumber?.trim(),
             status = params.status,

@@ -9,6 +9,7 @@ data class Pigeon(
     val birthDate: Long? = null,
     val entryDate: Long? = null,
     val photoPath: String? = null,
+    val eyePhotoPath: String? = null,
     val loft: Loft? = null,
     val cageNumber: String? = null,
     val status: PigeonStatus = PigeonStatus.ACTIVE,

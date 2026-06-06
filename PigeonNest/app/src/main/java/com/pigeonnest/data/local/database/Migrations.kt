@@ -89,3 +89,10 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
         db.execSQL("ALTER TABLE pigeons_new RENAME TO pigeons")
     }
 }
+
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Add eye_photo_path column to pigeons table
+        db.execSQL("ALTER TABLE pigeons ADD COLUMN eye_photo_path TEXT")
+    }
+}

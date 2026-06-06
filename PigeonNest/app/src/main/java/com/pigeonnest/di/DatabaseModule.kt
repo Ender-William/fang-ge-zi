@@ -8,6 +8,7 @@ import com.pigeonnest.data.local.dao.LocationHistoryDao
 import com.pigeonnest.data.local.dao.PigeonDao
 import com.pigeonnest.data.local.dao.PigeonPhotoDao
 import com.pigeonnest.data.local.database.MIGRATION_1_2
+import com.pigeonnest.data.local.database.MIGRATION_2_3
 import com.pigeonnest.data.local.database.PigeonNestDatabase
 import dagger.Module
 import dagger.Provides
@@ -32,7 +33,7 @@ object DatabaseModule {
             PigeonNestDatabase.DATABASE_NAME
         )
             .openHelperFactory(factory)
-            .addMigrations(MIGRATION_1_2)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
             .build()
     }
 

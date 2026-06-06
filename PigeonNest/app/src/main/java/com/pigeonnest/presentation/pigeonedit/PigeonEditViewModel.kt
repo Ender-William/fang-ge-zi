@@ -41,6 +41,7 @@ class PigeonEditViewModel @Inject constructor(
     private val _birthDate = MutableStateFlow<Long?>(null)
     private val _selectedColor = MutableStateFlow<String?>(null)
     private val _photoUri = MutableStateFlow<Uri?>(null)
+    private val _eyePhotoUri = MutableStateFlow<Uri?>(null)
     private val _loftId = MutableStateFlow<String?>(null)
     private val _cageNumber = MutableStateFlow<String?>(null)
     private val _currentStep = MutableStateFlow(1)
@@ -112,6 +113,10 @@ class PigeonEditViewModel @Inject constructor(
         _photoUri.value = uri
     }
 
+    fun setEyePhotoUri(uri: Uri?) {
+        _eyePhotoUri.value = uri
+    }
+
     fun setLoftId(loftId: String?) {
         _loftId.value = loftId
     }
@@ -165,6 +170,8 @@ class PigeonEditViewModel @Inject constructor(
                         notes = notes,
                         photoUri = _photoUri.value,
                         photoPath = _pigeon.value?.photoPath,
+                        eyePhotoUri = _eyePhotoUri.value,
+                        eyePhotoPath = _pigeon.value?.eyePhotoPath,
                         fatherId = _fatherId.value,
                         motherId = _motherId.value,
                         mateId = _mateId.value

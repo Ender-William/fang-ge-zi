@@ -156,16 +156,32 @@ class PigeonDetailFragment : Fragment() {
         }
         binding.imageAvatar.setBorderColor(genderColor)
 
+        binding.imageAvatar.setBorderColor(genderColor)
+        binding.imageEyePhoto.setBorderColor(genderColor)
+
         PhotoStorageManager(requireContext()).loadPhoto(
             binding.imageAvatar,
             pigeon.photoPath
         )
 
-        // 点击头像放大查看
+        // 点击全身照放大查看
         pigeon.photoPath?.let { path ->
             binding.imageAvatar.setOnClickListener {
                 ImageViewerDialogFragment.newInstance(path, pigeon.name)
                     .show(parentFragmentManager, "image_viewer")
+            }
+        }
+
+        PhotoStorageManager(requireContext()).loadPhoto(
+            binding.imageEyePhoto,
+            pigeon.eyePhotoPath
+        )
+
+        // 点击眼睛照片放大查看
+        pigeon.eyePhotoPath?.let { path ->
+            binding.imageEyePhoto.setOnClickListener {
+                ImageViewerDialogFragment.newInstance(path, "${pigeon.name} - 眼睛照片")
+                    .show(parentFragmentManager, "image_viewer_eye")
             }
         }
 

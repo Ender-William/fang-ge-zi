@@ -49,6 +49,9 @@ data class PigeonEntity(
     @ColumnInfo(name = "photo_path")
     val photoPath: String? = null,
 
+    @ColumnInfo(name = "eye_photo_path")
+    val eyePhotoPath: String? = null,
+
     @ColumnInfo(name = "loft_id")
     val loftId: String? = null,
 

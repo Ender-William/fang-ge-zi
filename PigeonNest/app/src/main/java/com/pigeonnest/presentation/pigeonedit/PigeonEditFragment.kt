@@ -42,6 +42,7 @@ class PigeonEditFragment : Fragment() {
     private val args: PigeonEditFragmentArgs by navArgs()
 
     private var currentPhotoFile: File? = null
+    private var currentEyePhotoFile: File? = null
 
     private val pickPhotoLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
@@ -66,6 +67,33 @@ class PigeonEditFragment : Fragment() {
                 viewModel.setPhotoUri(uri)
                 binding.imagePreview.setImageURI(uri)
                 binding.imagePreview.visibility = View.VISIBLE
+            }
+        }
+    }
+
+    private val pickEyePhotoLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            viewModel.setEyePhotoUri(it)
+            binding.imageEyePreview.setImageURI(it)
+            binding.imageEyePreview.visibility = View.VISIBLE
+        }
+    }
+
+    private val takeEyePhotoLauncher = registerForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { success: Boolean ->
+        if (success) {
+            currentEyePhotoFile?.let { file ->
+                val uri = FileProvider.getUriForFile(
+                    requireContext(),
+                    "${requireContext().packageName}.fileprovider",
+                    file
+                )
+                viewModel.setEyePhotoUri(uri)
+                binding.imageEyePreview.setImageURI(uri)
+                binding.imageEyePreview.visibility = View.VISIBLE
             }
         }
     }
@@ -251,6 +279,33 @@ class PigeonEditFragment : Fragment() {
         binding.buttonPickPhoto.setOnClickListener {
             pickPhotoLauncher.launch("image/*")
         }
+
+        binding.buttonTakeEyePhoto.setOnClickListener {
+            when {
+                ContextCompat.checkSelfPermission(
+                    requireContext(), Manifest.permission.CAMERA
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                    launchEyeCamera()
+                }
+                shouldShowRequestPermissionRationale(Manifest.permission.CAMERA) -> {
+                    AlertDialog.Builder(requireContext(), R.style.ElderlyDialogTheme)
+                        .setTitle("需要相机权限")
+                        .setMessage("拍照功能需要访问相机权限，请在设置中开启。")
+                        .setPositiveButton("去设置") { _, _ ->
+                            requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                        }
+                        .setNegativeButton("取消", null)
+                        .show()
+                }
+                else -> {
+                    requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                }
+            }
+        }
+
+        binding.buttonPickEyePhoto.setOnClickListener {
+            pickEyePhotoLauncher.launch("image/*")
+        }
     }
 
     private fun launchCamera() {
@@ -267,6 +322,35 @@ class PigeonEditFragment : Fragment() {
                 photoFile
             )
             takePhotoLauncher.launch(uri)
+        } catch (e: SecurityException) {
+            Toast.makeText(
+                requireContext(),
+                "相机权限被拒绝，请在系统设置中开启相机权限",
+                Toast.LENGTH_LONG
+            ).show()
+        } catch (e: Exception) {
+            Toast.makeText(
+                requireContext(),
+                "启动相机失败: ${e.message}",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
+    private fun launchEyeCamera() {
+        try {
+            val photoFile = File.createTempFile(
+                "pigeon_eye_${System.currentTimeMillis()}",
+                ".jpg",
+                requireContext().cacheDir
+            )
+            currentEyePhotoFile = photoFile
+            val uri = FileProvider.getUriForFile(
+                requireContext(),
+                "${requireContext().packageName}.fileprovider",
+                photoFile
+            )
+            takeEyePhotoLauncher.launch(uri)
         } catch (e: SecurityException) {
             Toast.makeText(
                 requireContext(),
@@ -354,6 +438,15 @@ class PigeonEditFragment : Fragment() {
                             if (file.exists()) {
                                 binding.imagePreview.setImageURI(android.net.Uri.fromFile(file))
                                 binding.imagePreview.visibility = View.VISIBLE
+                            }
+                        }
+
+                        // 加载原眼睛照片预览
+                        it.eyePhotoPath?.let { path ->
+                            val file = java.io.File(path)
+                            if (file.exists()) {
+                                binding.imageEyePreview.setImageURI(android.net.Uri.fromFile(file))
+                                binding.imageEyePreview.visibility = View.VISIBLE
                             }
                         }
 
