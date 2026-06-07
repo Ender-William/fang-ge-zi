@@ -137,27 +137,9 @@ class PigeonEditFragment : Fragment() {
     }
 
     private fun setupGenderSelection() {
-        val isEditMode = args.pigeonId != null
-        if (isEditMode) {
-            // 编辑模式：禁止修改性别
-            binding.radioMale.isClickable = false
-            binding.radioFemale.isClickable = false
-            binding.radioUnknown.isClickable = false
-            val showGenderHint = {
-                AlertDialog.Builder(requireContext(), R.style.ElderlyDialogTheme)
-                    .setTitle("提示")
-                    .setMessage("已有鸽子的性别不能修改。如需更改性别，请删除此鸽子后重新添加。")
-                    .setPositiveButton("知道了", null)
-                    .show()
-            }
-            binding.radioMale.setOnClickListener { showGenderHint() }
-            binding.radioFemale.setOnClickListener { showGenderHint() }
-            binding.radioUnknown.setOnClickListener { showGenderHint() }
-        } else {
-            binding.radioMale.setOnClickListener { viewModel.setGender(Gender.MALE) }
-            binding.radioFemale.setOnClickListener { viewModel.setGender(Gender.FEMALE) }
-            binding.radioUnknown.setOnClickListener { viewModel.setGender(Gender.UNKNOWN) }
-        }
+        binding.radioMale.setOnClickListener { viewModel.setGender(Gender.MALE) }
+        binding.radioFemale.setOnClickListener { viewModel.setGender(Gender.FEMALE) }
+        binding.radioUnknown.setOnClickListener { viewModel.setGender(Gender.UNKNOWN) }
     }
 
     private fun setupColorGrid() {
