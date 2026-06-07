@@ -20,6 +20,7 @@ import com.pigeonnest.databinding.FragmentPigeonDetailBinding
 import com.pigeonnest.presentation.common.ImageViewerDialogFragment
 import com.pigeonnest.domain.model.Gender
 import com.pigeonnest.domain.model.Pigeon
+import com.pigeonnest.domain.model.PigeonStatus
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -199,7 +200,15 @@ class PigeonDetailFragment : Fragment() {
             "未分配鸽舍"
         }
 
-        binding.textStatus.text = "状态: ${pigeon.status.displayName}"
+        binding.chipStatus.text = pigeon.status.displayName
+        val statusColorRes = when (pigeon.status) {
+            PigeonStatus.ACTIVE -> R.color.success
+            PigeonStatus.SOLD -> R.color.male_blue
+            PigeonStatus.DECEASED -> R.color.neutral_gray
+            PigeonStatus.GIFTED -> R.color.warning
+        }
+        binding.chipStatus.setChipBackgroundColorResource(statusColorRes)
+        binding.chipStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
 
         binding.textNotes.text = pigeon.notes ?: "暂无备注"
     }

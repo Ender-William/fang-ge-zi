@@ -25,6 +25,7 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import com.pigeonnest.R
 import com.pigeonnest.databinding.FragmentPigeonEditBinding
 import com.pigeonnest.domain.model.Gender
+import com.pigeonnest.domain.model.PigeonStatus
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.io.File
@@ -123,6 +124,7 @@ class PigeonEditFragment : Fragment() {
         setupGenderSelection()
         setupColorGrid()
         setupDatePicker()
+        setupStatusSelection()
         setupPhotoButtons()
         setupFamilyRelation()
         setupStepNavigation()
@@ -249,6 +251,43 @@ class PigeonEditFragment : Fragment() {
                 binding.buttonBirthDate.text = dateStr
             }
             picker.show(parentFragmentManager, "birth_date_picker")
+        }
+    }
+
+    private fun setupStatusSelection() {
+        val statusMap = mapOf(
+            binding.buttonStatusActive to PigeonStatus.ACTIVE,
+            binding.buttonStatusSold to PigeonStatus.SOLD,
+            binding.buttonStatusDeceased to PigeonStatus.DECEASED,
+            binding.buttonStatusGifted to PigeonStatus.GIFTED
+        )
+
+        statusMap.forEach { (button, status) ->
+            button.setOnClickListener {
+                viewModel.setStatus(status)
+                updateStatusSelection(button)
+            }
+        }
+
+        // 默认选中"在养"
+        updateStatusSelection(binding.buttonStatusActive)
+    }
+
+    private fun updateStatusSelection(selectedButton: MaterialButton) {
+        val buttons = listOf(
+            binding.buttonStatusActive,
+            binding.buttonStatusSold,
+            binding.buttonStatusDeceased,
+            binding.buttonStatusGifted
+        )
+        buttons.forEach { btn ->
+            if (btn == selectedButton) {
+                btn.setBackgroundColor(resources.getColor(R.color.primary, null))
+                btn.setTextColor(resources.getColor(R.color.white, null))
+            } else {
+                btn.setBackgroundColor(resources.getColor(R.color.white, null))
+                btn.setTextColor(resources.getColor(R.color.text_primary, null))
+            }
         }
     }
 
@@ -430,6 +469,18 @@ class PigeonEditFragment : Fragment() {
                         it.loft?.let { loft ->
                             viewModel.setLoftId(loft.id)
                             binding.buttonSelectLoft.text = loft.name
+                        }
+
+                        // 加载已有状态
+                        viewModel.setStatus(it.status)
+                        val statusButtons = mapOf(
+                            PigeonStatus.ACTIVE to binding.buttonStatusActive,
+                            PigeonStatus.SOLD to binding.buttonStatusSold,
+                            PigeonStatus.DECEASED to binding.buttonStatusDeceased,
+                            PigeonStatus.GIFTED to binding.buttonStatusGifted
+                        )
+                        statusButtons[it.status]?.let { btn ->
+                            updateStatusSelection(btn)
                         }
 
                         // 加载原照片预览

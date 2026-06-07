@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.pigeonnest.domain.model.Gender
 import com.pigeonnest.domain.model.Loft
 import com.pigeonnest.domain.model.Pigeon
+import com.pigeonnest.domain.model.PigeonStatus
 import com.pigeonnest.domain.usecase.loft.GetLoftListUseCase
 import com.pigeonnest.domain.usecase.pigeon.GetPigeonDetailUseCase
 import com.pigeonnest.domain.usecase.pigeon.GetPigeonListUseCase
@@ -46,6 +47,7 @@ class PigeonEditViewModel @Inject constructor(
     private val _cageNumber = MutableStateFlow<String?>(null)
     private val _currentStep = MutableStateFlow(1)
     val currentStep: StateFlow<Int> = _currentStep
+    private val _selectedStatus = MutableStateFlow(PigeonStatus.ACTIVE)
 
     // 家族关系
     private val _fatherId = MutableStateFlow<String?>(null)
@@ -90,6 +92,7 @@ class PigeonEditViewModel @Inject constructor(
         _selectedColor.value = pigeon.color
         _loftId.value = pigeon.loft?.id
         _cageNumber.value = pigeon.cageNumber
+        _selectedStatus.value = pigeon.status
         pigeon.familyRelation?.let { relation ->
             _fatherId.value = relation.father?.id
             _motherId.value = relation.mother?.id
@@ -115,6 +118,10 @@ class PigeonEditViewModel @Inject constructor(
 
     fun setEyePhotoUri(uri: Uri?) {
         _eyePhotoUri.value = uri
+    }
+
+    fun setStatus(status: PigeonStatus) {
+        _selectedStatus.value = status
     }
 
     fun setLoftId(loftId: String?) {
@@ -172,6 +179,7 @@ class PigeonEditViewModel @Inject constructor(
                         photoPath = _pigeon.value?.photoPath,
                         eyePhotoUri = _eyePhotoUri.value,
                         eyePhotoPath = _pigeon.value?.eyePhotoPath,
+                        status = _selectedStatus.value,
                         fatherId = _fatherId.value,
                         motherId = _motherId.value,
                         mateId = _mateId.value

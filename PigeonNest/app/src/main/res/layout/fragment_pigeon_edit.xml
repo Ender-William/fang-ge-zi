@@ -316,6 +316,67 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
+                android:text="当前状态"
+                android:textColor="@color/text_secondary"
+                android:textSize="18sp" />
+
+            <GridLayout
+                android:id="@+id/grid_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:columnCount="2"
+                android:rowCount="2">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_status_active"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="4dp"
+                    android:text="在养"
+                    android:textSize="18sp"
+                    app:strokeColor="@color/input_border" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_status_sold"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="4dp"
+                    android:text="已售"
+                    android:textSize="18sp"
+                    app:strokeColor="@color/input_border" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_status_deceased"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="4dp"
+                    android:text="已故"
+                    android:textSize="18sp"
+                    app:strokeColor="@color/input_border" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_status_gifted"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="4dp"
+                    android:text="赠送"
+                    android:textSize="18sp"
+                    app:strokeColor="@color/input_border" />
+            </GridLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:text="全身照"
                 android:textColor="@color/text_secondary"
                 android:textSize="18sp" />

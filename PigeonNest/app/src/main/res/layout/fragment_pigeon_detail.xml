@@ -124,6 +124,13 @@
                 android:layout_height="wrap_content"
                 android:text="基本信息"
                 android:textSize="18sp" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="在养"
+                android:textSize="18sp" />
         </com.google.android.material.chip.ChipGroup>
 
         <LinearLayout
@@ -339,16 +346,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/label_notes" />
-
-        <TextView
-            android:id="@+id/text_status"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:textColor="@color/text_secondary"
-            android:textSize="18sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/text_notes" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
