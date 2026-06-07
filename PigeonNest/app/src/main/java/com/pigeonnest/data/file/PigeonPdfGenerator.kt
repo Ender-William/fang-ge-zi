@@ -35,7 +35,8 @@ class PigeonPdfGenerator @Inject constructor(
         const val PAGE_HEIGHT = 595
         const val MARGIN = 30f
 
-        const val PHOTO_SIZE_MAIN = 85f
+        const val PHOTO_SIZE_MAIN = 60f
+        const val PHOTO_SIZE_MEDIUM = 50f
         const val PHOTO_SIZE_SMALL = 36f
     }
 
@@ -70,21 +71,20 @@ class PigeonPdfGenerator @Inject constructor(
         lineage: LineageResult,
         loft: Loft?
     ) {
-        // 填充白色背景，避免某些渲染器识别为空白页
         canvas.drawColor(Color.WHITE)
 
         val titlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#2E2E28")
-            textSize = 20f
+            textSize = 18f
             typeface = Typeface.DEFAULT_BOLD
         }
         val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#5E5E54")
-            textSize = 11f
+            textSize = 10f
         }
         val valuePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#2E2E28")
-            textSize = 13f
+            textSize = 12f
         }
         val smallValuePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#2E2E28")
@@ -103,10 +103,6 @@ class PigeonPdfGenerator @Inject constructor(
             color = Color.parseColor("#FFF5EB")
             style = Paint.Style.FILL
         }
-        val altRowBgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#FAF7F2")
-            style = Paint.Style.FILL
-        }
 
         // 1. 标题
         val title = "鸽巢管家 · 鸽子血统档案"
@@ -116,109 +112,218 @@ class PigeonPdfGenerator @Inject constructor(
         val dateStr = "生成日期: ${SimpleDateFormat("yyyy-MM-dd", Locale.CHINA).format(Date())}"
         canvas.drawText(dateStr, PAGE_WIDTH - MARGIN - labelPaint.measureText(dateStr), 22f, labelPaint)
 
-        // 2. 当前鸽子信息区（三列布局）
-        val infoTop = 38f
+        // 2. 当前鸽子精简信息区
+        val infoTop = 35f
 
-        // 左列：照片
-        val photoX = MARGIN + 10f
-        val photoY = infoTop + 5f
+        // 左：照片
+        val photoX = MARGIN + 5f
+        val photoY = infoTop + 3f
         drawPhotoOrPlaceholder(canvas, pigeon.photoPath, photoX, photoY, PHOTO_SIZE_MAIN, boxPaint)
-        canvas.drawText("全身照", photoX + 18f, photoY + PHOTO_SIZE_MAIN + 14f, labelPaint)
+        val eyeX = photoX + PHOTO_SIZE_MAIN + 8f
+        drawPhotoOrPlaceholder(canvas, pigeon.eyePhotoPath, eyeX, photoY, PHOTO_SIZE_MAIN, boxPaint)
 
-        val eyePhotoX = photoX + PHOTO_SIZE_MAIN + 12f
-        drawPhotoOrPlaceholder(canvas, pigeon.eyePhotoPath, eyePhotoX, photoY, PHOTO_SIZE_MAIN, boxPaint)
-        canvas.drawText("眼睛照", eyePhotoX + 18f, photoY + PHOTO_SIZE_MAIN + 14f, labelPaint)
+        // 中：基本信息（紧凑两列）
+        val infoX = eyeX + PHOTO_SIZE_MAIN + 15f
+        val infoY = photoY + 5f
+        val lineH = 16f
 
-        // 中列：基本信息
-        val infoX = eyePhotoX + PHOTO_SIZE_MAIN + 22f
-        val infoY = photoY + 8f
-        val lineHeight = 19f
-
-        val infoPairs = listOf(
-            "名字" to pigeon.name,
-            "脚环号" to pigeon.ringNumber,
-            "性别" to pigeon.gender.displayName,
-            "羽色" to (pigeon.color ?: "未记录"),
-            "出生日期" to formatDate(pigeon.birthDate),
-            "当前状态" to pigeon.status.displayName,
-            "笼位号" to (pigeon.cageNumber ?: "未记录"),
-            "备注" to (pigeon.notes ?: "无")
+        val infoCol1X = infoX
+        val infoCol2X = infoX + 140f
+        val rows = listOf(
+            infoCol1X to "名字: ${pigeon.name}",
+            infoCol2X to "脚环号: ${pigeon.ringNumber}",
+            infoCol1X to "性别: ${pigeon.gender.displayName}",
+            infoCol2X to "羽色: ${pigeon.color ?: "未记录"}",
+            infoCol1X to "出生: ${formatDate(pigeon.birthDate)}",
+            infoCol2X to "状态: ${pigeon.status.displayName}",
+            infoCol1X to "笼位: ${pigeon.cageNumber ?: "未记录"}",
+            infoCol2X to "鸽舍: ${loft?.name ?: "未分配"}"
         )
-        infoPairs.forEachIndexed { index, (label, value) ->
-            val y = infoY + index * lineHeight
-            val displayValue = if (value.length > 14) value.take(14) + "…" else value
-            canvas.drawText("$label: $displayValue", infoX, y, valuePaint)
+        rows.forEachIndexed { idx, (x, text) ->
+            val y = infoY + (idx / 2) * lineH
+            val display = if (text.length > 16) text.take(16) + "…" else text
+            canvas.drawText(display, x, y, valuePaint)
         }
 
-        // 右列：鸽舍卡片
-        val loftCardWidth = 260f
-        val loftCardHeight = if (loft != null) 68f else 42f
-        val loftCardLeft = PAGE_WIDTH - MARGIN - loftCardWidth
-        val loftCardRect = RectF(loftCardLeft, infoTop, PAGE_WIDTH - MARGIN, infoTop + loftCardHeight)
-        canvas.drawRoundRect(loftCardRect, 6f, 6f, boxBgPaint)
-        canvas.drawRoundRect(loftCardRect, 6f, 6f, boxPaint)
+        // 右：鸽舍卡片
+        val loftCardW = 230f
+        val loftCardH = if (loft != null) 58f else 36f
+        val loftCardL = PAGE_WIDTH - MARGIN - loftCardW
+        val loftRect = RectF(loftCardL, infoTop, PAGE_WIDTH - MARGIN, infoTop + loftCardH)
+        canvas.drawRoundRect(loftRect, 6f, 6f, boxBgPaint)
+        canvas.drawRoundRect(loftRect, 6f, 6f, boxPaint)
 
         val loftTitlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#A64B0F")
-            textSize = 12f
+            textSize = 11f
             typeface = Typeface.DEFAULT_BOLD
         }
-        canvas.drawText("鸽舍信息", loftCardLeft + 10f, infoTop + 18f, loftTitlePaint)
+        canvas.drawText("鸽舍信息", loftCardL + 8f, infoTop + 16f, loftTitlePaint)
         val loftTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#2E2E28")
-            textSize = 11f
+            textSize = 10f
         }
         if (loft != null) {
-            canvas.drawText(loft.name, loftCardLeft + 10f, infoTop + 36f, loftTextPaint)
-            canvas.drawText(loft.location ?: "位置未填写", loftCardLeft + 10f, infoTop + 52f, loftTextPaint)
+            canvas.drawText(loft.name, loftCardL + 8f, infoTop + 32f, loftTextPaint)
+            canvas.drawText(loft.location ?: "位置未填写", loftCardL + 8f, infoTop + 46f, loftTextPaint)
         } else {
-            canvas.drawText("未分配鸽舍", loftCardLeft + 10f, infoTop + 36f, loftTextPaint)
+            canvas.drawText("未分配鸽舍", loftCardL + 8f, infoTop + 32f, loftTextPaint)
         }
 
-        var currentY = photoY + PHOTO_SIZE_MAIN + 28f
+        // 3. 血统区 — 横向三列展开
+        val pedigreeTop = 120f
+        val pedigreeBottom = PAGE_HEIGHT - 25f
+        val pedigreeHeight = pedigreeBottom - pedigreeTop
 
-        // 3. 血统区
-        canvas.drawText("上三代血统", MARGIN, currentY, titlePaint)
-        currentY += 14f
+        val col1X = MARGIN
+        val col2X = MARGIN + 250f
+        val col3X = MARGIN + 500f
+        val colWidth = 240f
 
-        val labelColWidth = 55f
-        val tableLeft = MARGIN
-        val tableRight = PAGE_WIDTH - MARGIN
-        val contentWidth = tableRight - tableLeft - labelColWidth
-
-        // 第1代：父母（2只）
-        drawGenerationRow(
-            canvas, "父母", extractGeneration(lineage, 1), generation = 1,
-            tableLeft, currentY, labelColWidth, contentWidth, rowHeight = 72f,
-            valuePaint, labelPaint, smallValuePaint, boxPaint, headerBgPaint, null
+        // 第1代：父母
+        val gen1 = extractGeneration(lineage, 1)
+        drawPedigreeColumn(
+            canvas, "第一代 父母", gen1,
+            col1X, pedigreeTop, colWidth, pedigreeHeight,
+            valuePaint, labelPaint, smallValuePaint, boxPaint, headerBgPaint
         )
-        currentY += 72f
 
-        // 第2代：祖父母（4只）
-        drawGenerationRow(
-            canvas, "祖父母", extractGeneration(lineage, 2), generation = 2,
-            tableLeft, currentY, labelColWidth, contentWidth, rowHeight = 72f,
-            valuePaint, labelPaint, smallValuePaint, boxPaint, headerBgPaint, altRowBgPaint
+        // 第2代：祖父母
+        val gen2 = extractGeneration(lineage, 2)
+        drawPedigreeColumn(
+            canvas, "第二代 祖父母", gen2,
+            col2X, pedigreeTop, colWidth, pedigreeHeight,
+            valuePaint, labelPaint, smallValuePaint, boxPaint, headerBgPaint
         )
-        currentY += 72f
 
-        // 第3代：曾祖父母（8只）
-        drawGenerationRow(
-            canvas, "曾祖父母", extractGeneration(lineage, 3), generation = 3,
-            tableLeft, currentY, labelColWidth, contentWidth, rowHeight = 55f,
-            valuePaint, labelPaint, smallValuePaint, boxPaint, headerBgPaint, null
+        // 第3代：曾祖父母
+        val gen3 = extractGeneration(lineage, 3)
+        drawPedigreeColumn(
+            canvas, "第三代 曾祖父母", gen3,
+            col3X, pedigreeTop, colWidth, pedigreeHeight,
+            valuePaint, labelPaint, smallValuePaint, boxPaint, headerBgPaint
         )
-        currentY += 55f
 
         // 页脚
         val footerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#7A7A6E")
             textSize = 9f
         }
-        canvas.drawText("本档案由《鸽巢管家》APP 自动生成", MARGIN, PAGE_HEIGHT - 12f, footerPaint)
+        canvas.drawText("本档案由《鸽巢管家》APP 自动生成", MARGIN, PAGE_HEIGHT - 10f, footerPaint)
     }
 
-    /** 按 BFS 提取指定代的全部鸽子（ generation=1 为父母，2 为祖父母，3 为曾祖父母） */
+    private fun drawPedigreeColumn(
+        canvas: Canvas,
+        header: String,
+        pigeons: List<PigeonBrief?>,
+        colX: Float,
+        colTop: Float,
+        colWidth: Float,
+        colHeight: Float,
+        valuePaint: Paint,
+        labelPaint: Paint,
+        smallValuePaint: Paint,
+        boxPaint: Paint,
+        headerBgPaint: Paint
+    ) {
+        val headerHeight = 20f
+        val contentTop = colTop + headerHeight
+        val contentHeight = colHeight - headerHeight
+
+        // 表头背景
+        canvas.drawRect(colX, colTop, colX + colWidth, contentTop, headerBgPaint)
+        canvas.drawRect(colX, colTop, colX + colWidth, contentTop, boxPaint)
+
+        val headerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#A64B0F")
+            textSize = 11f
+            typeface = Typeface.DEFAULT_BOLD
+            textAlign = Paint.Align.CENTER
+        }
+        canvas.drawText(header, colX + colWidth / 2f, colTop + 14f, headerPaint)
+        headerPaint.textAlign = Paint.Align.LEFT
+
+        // 列外框
+        canvas.drawRect(colX, contentTop, colX + colWidth, colTop + colHeight, boxPaint)
+
+        val cellCount = pigeons.size.coerceAtLeast(1)
+        val cellHeight = contentHeight / cellCount
+
+        // 根据格子高度动态选择照片尺寸
+        val photoSize = when {
+            cellHeight >= 100f -> 60f
+            cellHeight >= 60f -> 42f
+            cellHeight >= 45f -> 34f
+            else -> 28f
+        }
+
+        val smallBoxPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#D1D1C5")
+            style = Paint.Style.STROKE
+            strokeWidth = 1f
+        }
+
+        pigeons.forEachIndexed { index, brief ->
+            val cellTop = contentTop + index * cellHeight
+            if (index > 0) {
+                canvas.drawLine(colX, cellTop, colX + colWidth, cellTop, boxPaint)
+            }
+
+            if (brief == null) {
+                val cx = colX + colWidth / 2f
+                val cy = cellTop + cellHeight / 2f + 4f
+                labelPaint.textAlign = Paint.Align.CENTER
+                canvas.drawText("未记录", cx, cy, labelPaint)
+                labelPaint.textAlign = Paint.Align.LEFT
+                return@forEachIndexed
+            }
+
+            val pad = 6f
+            val photoX = colX + pad
+            val photoY = cellTop + (cellHeight - photoSize) / 2f
+            drawPhotoOrPlaceholder(canvas, brief.photoPath, photoX, photoY, photoSize, smallBoxPaint)
+
+            val textX = photoX + photoSize + 6f
+            val textBase = photoY + photoSize / 2f
+
+            // 根据可用宽度计算最大字符数（约每字符 11pt）
+            val textAreaWidth = colWidth - photoSize - pad * 3
+            val maxChars = (textAreaWidth / 11f).toInt()
+
+            val nameText = if (brief.name.length > maxChars) brief.name.take(maxChars) + "…" else brief.name
+            val ringText = if (brief.ringNumber.length > maxChars) brief.ringNumber.take(maxChars) + "…" else brief.ringNumber
+            val detailText = "${brief.gender.displayName}  ${brief.color ?: "未记录"}"
+
+            when {
+                cellHeight >= 80f -> {
+                    // 大格子：三行文字
+                    canvas.drawText(nameText, textX, textBase - 6f, valuePaint)
+                    canvas.drawText(ringText, textX, textBase + 8f, labelPaint)
+                    canvas.drawText(detailText, textX, textBase + 22f, labelPaint)
+                }
+                cellHeight >= 55f -> {
+                    // 中等格子：三行紧凑文字
+                    val nameP = Paint(valuePaint).apply { textSize = 11f }
+                    val detailP = Paint(labelPaint).apply { textSize = 9f }
+                    canvas.drawText(nameText, textX, textBase - 4f, nameP)
+                    canvas.drawText(ringText, textX, textBase + 8f, detailP)
+                    canvas.drawText(detailText, textX, textBase + 19f, detailP)
+                }
+                else -> {
+                    // 小格子：两行文字
+                    val nameP = Paint(smallValuePaint).apply { textSize = 10f }
+                    val detailP = Paint(labelPaint).apply { textSize = 9f }
+                    canvas.drawText(nameText, textX, textBase - 2f, nameP)
+                    canvas.drawText(ringText, textX, textBase + 10f, detailP)
+                    // 极小格子放不下第三行，省略性别羽色
+                    if (cellHeight >= 38f) {
+                        canvas.drawText(detailText, textX, textBase + 21f, detailP)
+                    }
+                }
+            }
+        }
+    }
+
     private fun extractGeneration(lineage: LineageResult, generation: Int): List<PigeonBrief?> {
         var currentNodes: List<LineageResult?> = listOf(lineage)
         repeat(generation) {
@@ -230,93 +335,6 @@ class PigeonPdfGenerator @Inject constructor(
             currentNodes = nextNodes
         }
         return currentNodes.map { it?.pigeon }
-    }
-
-    private fun drawGenerationRow(
-        canvas: Canvas,
-        label: String,
-        pigeons: List<PigeonBrief?>,
-        generation: Int,
-        tableLeft: Float,
-        rowTop: Float,
-        labelColWidth: Float,
-        contentWidth: Float,
-        rowHeight: Float,
-        valuePaint: Paint,
-        labelPaint: Paint,
-        smallValuePaint: Paint,
-        boxPaint: Paint,
-        bgPaint: Paint,
-        altBgPaint: Paint?
-    ) {
-        val tableRight = tableLeft + labelColWidth + contentWidth
-
-        // 表头背景（整行顶部一小条）
-        canvas.drawRect(tableLeft, rowTop, tableRight, rowTop + 18f, bgPaint)
-        canvas.drawRect(tableLeft, rowTop, tableRight, rowTop + rowHeight, boxPaint)
-
-        // 标签列文字
-        val labelCenterY = rowTop + 12f
-        canvas.drawText(label, tableLeft + 6f, labelCenterY, valuePaint)
-
-        // 标签与内容分隔线
-        canvas.drawLine(tableLeft + labelColWidth, rowTop, tableLeft + labelColWidth, rowTop + rowHeight, boxPaint)
-
-        // 交替行背景（数据区）
-        altBgPaint?.let {
-            canvas.drawRect(tableLeft + labelColWidth, rowTop + 18f, tableRight, rowTop + rowHeight, it)
-        }
-
-        val cellWidth = contentWidth / pigeons.size.coerceAtLeast(1)
-        val smallBoxPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#D1D1C5")
-            style = Paint.Style.STROKE
-            strokeWidth = 1f
-        }
-
-        pigeons.forEachIndexed { index, brief ->
-            val cellLeft = tableLeft + labelColWidth + index * cellWidth
-            if (index > 0) {
-                canvas.drawLine(cellLeft, rowTop, cellLeft, rowTop + rowHeight, boxPaint)
-            }
-
-            if (brief == null) {
-                val centerX = cellLeft + cellWidth / 2f
-                val centerY = rowTop + 18f + (rowHeight - 18f) / 2f + 4f
-                labelPaint.textAlign = Paint.Align.CENTER
-                canvas.drawText("未记录", centerX, centerY, labelPaint)
-                labelPaint.textAlign = Paint.Align.LEFT
-                return@forEachIndexed
-            }
-
-            if (generation <= 2) {
-                // 第1、2代有照片+文字
-                val padding = 6f
-                val photoSize = PHOTO_SIZE_SMALL
-                val photoX = cellLeft + padding
-                val photoY = rowTop + 18f + (rowHeight - 18f - photoSize) / 2f
-                drawPhotoOrPlaceholder(canvas, brief.photoPath, photoX, photoY, photoSize, smallBoxPaint)
-
-                val textX = photoX + photoSize + 6f
-                val textYBase = photoY + photoSize / 2f
-                val displayName = if (brief.name.length > 8) brief.name.take(8) + "…" else brief.name
-                val displayRing = if (brief.ringNumber.length > 10) brief.ringNumber.take(10) + "…" else brief.ringNumber
-                canvas.drawText(displayName, textX, textYBase - 2f, valuePaint)
-                canvas.drawText(displayRing, textX, textYBase + 11f, labelPaint)
-            } else {
-                // 第3代太挤，纯文字居中
-                val centerX = cellLeft + cellWidth / 2f
-                val centerY = rowTop + 18f + (rowHeight - 18f) / 2f
-                val displayName = if (brief.name.length > 5) brief.name.take(5) + "…" else brief.name
-                val displayRing = if (brief.ringNumber.length > 8) brief.ringNumber.take(8) + "…" else brief.ringNumber
-                smallValuePaint.textAlign = Paint.Align.CENTER
-                labelPaint.textAlign = Paint.Align.CENTER
-                canvas.drawText(displayName, centerX, centerY - 2f, smallValuePaint)
-                canvas.drawText(displayRing, centerX, centerY + 11f, labelPaint)
-                smallValuePaint.textAlign = Paint.Align.LEFT
-                labelPaint.textAlign = Paint.Align.LEFT
-            }
-        }
     }
 
     private fun drawPhotoOrPlaceholder(
@@ -335,17 +353,19 @@ class PigeonPdfGenerator @Inject constructor(
 
         photoPath?.let { path ->
             val file = File(path)
+            android.util.Log.d("PigeonPdfGenerator", "photoPath=$path exists=${file.exists()}")
             if (file.exists()) {
                 try {
                     val bitmap = BitmapFactory.decodeFile(path)
+                    android.util.Log.d("PigeonPdfGenerator", "decoded bitmap=${bitmap != null} size=${bitmap?.width}x${bitmap?.height}")
                     bitmap?.let {
                         val scaled = Bitmap.createScaledBitmap(it, size.toInt(), size.toInt(), true)
                         canvas.drawBitmap(scaled, x, y, null)
                         if (scaled != it) scaled.recycle()
                         return
                     }
-                } catch (_: Exception) {
-                    // 解码失败则回退到占位图
+                } catch (e: Exception) {
+                    android.util.Log.e("PigeonPdfGenerator", "decode failed: ${e.message}")
                 }
             }
         }
@@ -353,10 +373,10 @@ class PigeonPdfGenerator @Inject constructor(
         canvas.drawRect(rect, borderPaint)
         val placeholderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#B5B5A8")
-            textSize = if (size > 60f) 14f else 10f
+            textSize = if (size > 50f) 12f else 9f
             textAlign = Paint.Align.CENTER
         }
-        canvas.drawText("无照片", x + size / 2f, y + size / 2f + 5f, placeholderPaint)
+        canvas.drawText("无照片", x + size / 2f, y + size / 2f + 4f, placeholderPaint)
     }
 
     private fun formatDate(timestamp: Long?): String {

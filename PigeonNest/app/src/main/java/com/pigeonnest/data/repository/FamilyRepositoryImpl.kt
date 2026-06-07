@@ -50,7 +50,7 @@ class FamilyRepositoryImpl @Inject constructor(
     }
 
     private suspend fun buildLineage(pigeonId: String, generation: Int, maxGeneration: Int): LineageResult {
-        val brief = getBrief(pigeonId) ?: PigeonBrief(pigeonId, "", "", Gender.UNKNOWN, null)
+        val brief = getBrief(pigeonId) ?: PigeonBrief(pigeonId, "", "", Gender.UNKNOWN, null, null)
         if (generation >= maxGeneration) {
             return LineageResult(pigeon = brief, generation = generation)
         }
@@ -182,7 +182,7 @@ class FamilyRepositoryImpl @Inject constructor(
         val rootNode = buildNode(centerPigeonId, 0, depth, visited) ?: GraphNode(
             pigeonId = centerPigeonId,
             pigeonBrief = getBrief(centerPigeonId)
-                ?: PigeonBrief(centerPigeonId, "", "", Gender.UNKNOWN, null)
+                ?: PigeonBrief(centerPigeonId, "", "", Gender.UNKNOWN, null, null)
         )
         val allNodes = mutableListOf<GraphNode>()
         val edges = mutableListOf<GraphEdge>()
@@ -268,7 +268,8 @@ class FamilyRepositoryImpl @Inject constructor(
             ringNumber = ringNumber,
             name = name,
             gender = Gender.fromCode(gender),
-            photoPath = photoPath
+            photoPath = photoPath,
+            color = color
         )
     }
 }
