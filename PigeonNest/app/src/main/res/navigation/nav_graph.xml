@@ -35,6 +35,9 @@
         <action
             android:id="@+id/action_pigeonDetail_to_locationSet"
             app:destination="@id/locationSetFragment" />
+        <action
+            android:id="@+id/action_pigeonDetail_to_pdfPreview"
+            app:destination="@id/pdfPreviewFragment" />
     </fragment>
 
     <fragment
@@ -46,6 +49,16 @@
             android:name="pigeonId"
             app:argType="string"
             app:nullable="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/pdfPreviewFragment"
+        android:name="com.pigeonnest.presentation.pdfpreview.PdfPreviewFragment"
+        android:label="导出预览"
+        tools:layout="@layout/fragment_pdf_preview">
+        <argument
+            android:name="pdfFilePath"
+            app:argType="string" />
     </fragment>
 
     <fragment

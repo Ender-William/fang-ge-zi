@@ -108,6 +108,39 @@ class PigeonDetailFragment : Fragment() {
                 }
             }
         }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.pdfPreviewFile.collect { file ->
+                    file?.let {
+                        val action = PigeonDetailFragmentDirections
+                            .actionPigeonDetailToPdfPreview(it.absolutePath)
+                        findNavController().navigate(action)
+                        viewModel.clearPdfPreviewFile()
+                    }
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.pdfError.collect { error ->
+                    error?.let {
+                        Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
+                        viewModel.clearPdfError()
+                    }
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.isGeneratingPdf.collect { isGenerating ->
+                    binding.buttonExport.isEnabled = !isGenerating
+                    binding.buttonExport.text = if (isGenerating) "生成中..." else "导出档案"
+                }
+            }
+        }
     }
 
     private fun setupListeners() {
@@ -123,6 +156,10 @@ class PigeonDetailFragment : Fragment() {
 
         binding.buttonDelete.setOnClickListener {
             viewModel.pigeon.value?.let { showDeleteConfirmDialog(it) }
+        }
+
+        binding.buttonExport.setOnClickListener {
+            viewModel.generateExportPdf(args.pigeonId)
         }
 
         binding.buttonEditFamily.setOnClickListener {
