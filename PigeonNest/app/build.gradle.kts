@@ -18,7 +18,7 @@ android {
         versionCode = 1
         versionName = "1.0.2"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.pigeonnest.HiltTestRunner"
     }
 
     buildFeatures {
@@ -109,4 +109,29 @@ dependencies {
     testImplementation("androidx.arch.core:core-testing:2.2.0")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+
+    // Mocking
+    testImplementation("io.mockk:mockk:1.13.9")
+    androidTestImplementation("io.mockk:mockk-android:1.13.9")
+
+    // Hilt Testing
+    testImplementation("com.google.dagger:hilt-android-testing:2.50")
+    kaptTest("com.google.dagger:hilt-compiler:2.50")
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.50")
+    kaptAndroidTest("com.google.dagger:hilt-compiler:2.50")
+
+    // Espresso Extensions
+    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1")
+    androidTestImplementation("androidx.test.espresso:espresso-intents:3.5.1")
+    androidTestImplementation("androidx.navigation:navigation-testing:2.7.6")
+    androidTestImplementation("androidx.fragment:fragment-testing:1.6.2")
+
+    // Room Testing
+    testImplementation("androidx.room:room-testing:2.6.1")
+
+    // Turbine for Flow testing
+    testImplementation("app.cash.turbine:turbine:1.0.0")
+
+    // Robolectric for JVM Android tests
+    testImplementation("org.robolectric:robolectric:4.11.1")
 }
