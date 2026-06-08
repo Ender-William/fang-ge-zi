@@ -80,7 +80,7 @@ class BackupManager @Inject constructor(
             val backupData = BackupData(
                 backup_version = BACKUP_VERSION,
                 backup_date = System.currentTimeMillis(),
-                app_version = "1.0.2",
+                app_version = com.pigeonnest.BuildConfig.VERSION_NAME,
                 data = BackupContent(
                     lofts = lofts,
                     pigeons = pigeons,

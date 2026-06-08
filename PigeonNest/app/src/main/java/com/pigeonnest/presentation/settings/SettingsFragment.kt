@@ -15,6 +15,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.pigeonnest.BuildConfig
 import com.pigeonnest.R
 import com.pigeonnest.databinding.DialogAboutBinding
 import com.pigeonnest.databinding.FragmentSettingsBinding
@@ -159,6 +160,7 @@ class SettingsFragment : Fragment() {
 
     private fun showAboutDialog() {
         val dialogBinding = DialogAboutBinding.inflate(LayoutInflater.from(requireContext()))
+        dialogBinding.textVersion.text = "版本 ${BuildConfig.VERSION_NAME}"
         dialogBinding.textGithub.movementMethod = LinkMovementMethod.getInstance()
         AlertDialog.Builder(requireContext(), R.style.ElderlyDialogTheme)
             .setTitle("关于放鸽子")
