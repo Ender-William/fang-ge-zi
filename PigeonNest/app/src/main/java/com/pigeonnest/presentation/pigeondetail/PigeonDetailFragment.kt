@@ -247,6 +247,7 @@ class PigeonDetailFragment : Fragment() {
         binding.chipStatus.setChipBackgroundColorResource(statusColorRes)
         binding.chipStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
 
+        binding.textAchievement.text = pigeon.achievement ?: "未填写"
         binding.textNotes.text = pigeon.notes ?: "暂无备注"
     }
 

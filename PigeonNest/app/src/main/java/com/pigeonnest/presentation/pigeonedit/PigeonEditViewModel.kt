@@ -48,6 +48,7 @@ class PigeonEditViewModel @Inject constructor(
     private val _currentStep = MutableStateFlow(1)
     val currentStep: StateFlow<Int> = _currentStep
     private val _selectedStatus = MutableStateFlow(PigeonStatus.ACTIVE)
+    private val _achievement = MutableStateFlow<String?>(null)
 
     // 家族关系
     private val _fatherId = MutableStateFlow<String?>(null)
@@ -93,6 +94,7 @@ class PigeonEditViewModel @Inject constructor(
         _loftId.value = pigeon.loft?.id
         _cageNumber.value = pigeon.cageNumber
         _selectedStatus.value = pigeon.status
+        _achievement.value = pigeon.achievement
         pigeon.familyRelation?.let { relation ->
             _fatherId.value = relation.father?.id
             _motherId.value = relation.mother?.id
@@ -130,6 +132,10 @@ class PigeonEditViewModel @Inject constructor(
 
     fun setCageNumber(cage: String?) {
         _cageNumber.value = cage
+    }
+
+    fun setAchievement(achievement: String?) {
+        _achievement.value = achievement
     }
 
     fun setFatherId(id: String?) {
@@ -175,6 +181,7 @@ class PigeonEditViewModel @Inject constructor(
                         loftId = _loftId.value,
                         cageNumber = _cageNumber.value,
                         notes = notes,
+                        achievement = _achievement.value,
                         photoUri = _photoUri.value,
                         photoPath = _pigeon.value?.photoPath,
                         eyePhotoUri = _eyePhotoUri.value,

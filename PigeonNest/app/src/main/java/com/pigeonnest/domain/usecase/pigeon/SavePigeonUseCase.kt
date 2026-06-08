@@ -29,6 +29,7 @@ class SavePigeonUseCase @Inject constructor(
         val cageNumber: String? = null,
         val status: PigeonStatus = PigeonStatus.ACTIVE,
         val notes: String? = null,
+        val achievement: String? = null,
         val photoUri: Uri? = null,
         val photoPath: String? = null,
         val eyePhotoUri: Uri? = null,
@@ -82,7 +83,8 @@ class SavePigeonUseCase @Inject constructor(
             loft = loft,
             cageNumber = params.cageNumber?.trim(),
             status = params.status,
-            notes = params.notes?.trim()
+            notes = params.notes?.trim(),
+            achievement = params.achievement?.trim()
         )
 
         val saveResult = pigeonRepository.savePigeon(pigeon)

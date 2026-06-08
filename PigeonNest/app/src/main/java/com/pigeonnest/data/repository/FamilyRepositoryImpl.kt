@@ -269,7 +269,8 @@ class FamilyRepositoryImpl @Inject constructor(
             name = name,
             gender = Gender.fromCode(gender),
             photoPath = photoPath,
-            color = color
+            color = color,
+            achievement = achievement
         )
     }
 }

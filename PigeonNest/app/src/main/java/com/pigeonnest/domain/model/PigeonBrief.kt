@@ -6,5 +6,6 @@ data class PigeonBrief(
     val name: String,
     val gender: Gender,
     val photoPath: String?,
-    val color: String? = null
+    val color: String? = null,
+    val achievement: String? = null
 )

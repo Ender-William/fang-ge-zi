@@ -24,6 +24,7 @@ class PigeonMapper @Inject constructor() {
             cageNumber = entity.cageNumber,
             status = PigeonStatus.fromCode(entity.status),
             notes = entity.notes,
+            achievement = entity.achievement,
             createdAt = entity.createdAt,
             updatedAt = entity.updatedAt
         )
@@ -44,6 +45,7 @@ class PigeonMapper @Inject constructor() {
             cageNumber = domain.cageNumber,
             status = domain.status.code,
             notes = domain.notes,
+            achievement = domain.achievement,
             createdAt = domain.createdAt,
             updatedAt = domain.updatedAt
         )

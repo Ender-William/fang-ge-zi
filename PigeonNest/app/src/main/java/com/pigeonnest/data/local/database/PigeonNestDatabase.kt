@@ -22,7 +22,7 @@ import com.pigeonnest.data.local.entity.PigeonPhotoEntity
         FamilyRelationEntity::class,
         PigeonPhotoEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = true
 )
 @TypeConverters(DateConverter::class)

@@ -64,6 +64,9 @@ data class PigeonEntity(
     @ColumnInfo(name = "notes")
     val notes: String? = null,
 
+    @ColumnInfo(name = "achievement")
+    val achievement: String? = null,
+
     @ColumnInfo(name = "created_at")
     val createdAt: Long = System.currentTimeMillis(),
 

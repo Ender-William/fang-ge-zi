@@ -409,6 +409,7 @@ class PigeonEditFragment : Fragment() {
                         binding.editName.setText(it.name)
                         binding.editRingNumber.setText(it.ringNumber)
                         binding.editNotes.setText(it.notes ?: "")
+                        binding.editAchievement.setText(it.achievement ?: "")
 
                         when (it.gender) {
                             Gender.MALE -> binding.radioMale.isChecked = true
@@ -674,8 +675,10 @@ class PigeonEditFragment : Fragment() {
         val name = binding.editName.text.toString().trim()
         val ringNumber = binding.editRingNumber.text.toString().trim()
         val notes = binding.editNotes.text.toString().trim().ifEmpty { null }
+        val achievement = binding.editAchievement.text.toString().trim().ifEmpty { null }
         val cageNumber = binding.editCageNumber.text.toString().trim().ifEmpty { null }
         viewModel.setCageNumber(cageNumber)
+        viewModel.setAchievement(achievement)
 
         viewModel.save(
             id = args.pigeonId,

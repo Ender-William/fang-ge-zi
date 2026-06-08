@@ -14,6 +14,7 @@ data class Pigeon(
     val cageNumber: String? = null,
     val status: PigeonStatus = PigeonStatus.ACTIVE,
     val notes: String? = null,
+    val achievement: String? = null,
     val familyRelation: FamilyRelation? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()

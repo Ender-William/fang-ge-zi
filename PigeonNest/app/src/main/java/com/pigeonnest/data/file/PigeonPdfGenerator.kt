@@ -35,7 +35,7 @@ class PigeonPdfGenerator @Inject constructor(
         const val PAGE_HEIGHT = 595
         const val MARGIN = 30f
 
-        const val PHOTO_SIZE_MAIN = 60f
+        const val PHOTO_SIZE_MAIN = 52f
         const val PHOTO_SIZE_MEDIUM = 50f
         const val PHOTO_SIZE_SMALL = 36f
     }
@@ -107,13 +107,13 @@ class PigeonPdfGenerator @Inject constructor(
         // 1. 标题
         val title = "鸽巢管家 · 鸽子血统档案"
         val titleWidth = titlePaint.measureText(title)
-        canvas.drawText(title, (PAGE_WIDTH - titleWidth) / 2f, 22f, titlePaint)
+        canvas.drawText(title, (PAGE_WIDTH - titleWidth) / 2f, 14f, titlePaint)
 
         val dateStr = "生成日期: ${SimpleDateFormat("yyyy-MM-dd", Locale.CHINA).format(Date())}"
-        canvas.drawText(dateStr, PAGE_WIDTH - MARGIN - labelPaint.measureText(dateStr), 22f, labelPaint)
+        canvas.drawText(dateStr, PAGE_WIDTH - MARGIN - labelPaint.measureText(dateStr), 14f, labelPaint)
 
         // 2. 当前鸽子精简信息区
-        val infoTop = 35f
+        val infoTop = 25f
 
         // 左：照片
         val photoX = MARGIN + 5f
@@ -125,7 +125,7 @@ class PigeonPdfGenerator @Inject constructor(
         // 中：基本信息（紧凑两列）
         val infoX = eyeX + PHOTO_SIZE_MAIN + 15f
         val infoY = photoY + 5f
-        val lineH = 16f
+        val lineH = 14f
 
         val infoCol1X = infoX
         val infoCol2X = infoX + 140f
@@ -144,6 +144,12 @@ class PigeonPdfGenerator @Inject constructor(
             val display = if (text.length > 16) text.take(16) + "…" else text
             canvas.drawText(display, x, y, valuePaint)
         }
+
+        // 比赛成绩（跨行显示）
+        val achievementY = infoY + 4 * lineH
+        val achievementText = "成绩: ${pigeon.achievement ?: "未填写"}"
+        val achievementDisplay = if (achievementText.length > 40) achievementText.take(40) + "…" else achievementText
+        canvas.drawText(achievementDisplay, infoCol1X, achievementY, valuePaint)
 
         // 右：鸽舍卡片
         val loftCardW = 230f
@@ -171,8 +177,8 @@ class PigeonPdfGenerator @Inject constructor(
         }
 
         // 3. 血统区 — 横向三列展开
-        val pedigreeTop = 120f
-        val pedigreeBottom = PAGE_HEIGHT - 25f
+        val pedigreeTop = 105f
+        val pedigreeBottom = PAGE_HEIGHT - 12f
         val pedigreeHeight = pedigreeBottom - pedigreeTop
 
         val col1X = MARGIN
@@ -209,7 +215,7 @@ class PigeonPdfGenerator @Inject constructor(
             color = Color.parseColor("#7A7A6E")
             textSize = 9f
         }
-        canvas.drawText("本档案由《鸽巢管家》APP 自动生成", MARGIN, PAGE_HEIGHT - 10f, footerPaint)
+        canvas.drawText("本档案由《鸽巢管家》APP 自动生成", MARGIN, PAGE_HEIGHT - 7f, footerPaint)
     }
 
     private fun drawPedigreeColumn(
@@ -279,46 +285,113 @@ class PigeonPdfGenerator @Inject constructor(
             }
 
             val pad = 6f
+            val contentW = colWidth - pad * 2
+
+            // 脚环号 paint：加粗，尺寸随格子递减
+            val ringPaint = Paint(when {
+                cellHeight >= 80f -> valuePaint
+                cellHeight >= 55f -> Paint(valuePaint).apply { textSize = 11f }
+                else -> Paint(smallValuePaint).apply { textSize = 10f }
+            }).apply {
+                typeface = Typeface.DEFAULT_BOLD
+            }
+            val ringLineHeight = ringPaint.textSize * 1.2f
+
+            // 预计算脚环号行数
+            val ringLines = run {
+                var remaining = brief.ringNumber
+                var lines = 0
+                while (remaining.isNotEmpty()) {
+                    val chars = ringPaint.breakText(remaining, true, contentW, null)
+                    if (chars <= 0) break
+                    remaining = remaining.drop(chars)
+                    lines++
+                }
+                lines.coerceAtLeast(1)
+            }
+            val ringHeight = ringLines * ringLineHeight
+
+            // 信息 paint（性别、羽色、成绩）
+            val infoPaint = Paint(labelPaint).apply {
+                textSize = when {
+                    cellHeight >= 80f -> 10f
+                    cellHeight >= 55f -> 9f
+                    else -> 8f
+                }
+            }
+            val infoLineHeight = infoPaint.textSize * 1.2f
+            val infoMaxWidth = contentW - photoSize - 4f
+
+            // 将信息拆为两段：【性别+羽色】和【成绩】，成绩强制单独一行
+            val firstLine = buildString {
+                append(brief.gender.displayName)
+                brief.color?.let { append("  $it") }
+            }
+            val secondLine = brief.achievement?.takeIf { it.isNotBlank() }
+
+            // 计算总行数（第一段 wrap + 1 空行 + 第二段 wrap）
+            fun countWrappedLines(text: String): Int {
+                var remaining = text
+                var lines = 0
+                while (remaining.isNotEmpty()) {
+                    val chars = infoPaint.breakText(remaining, true, infoMaxWidth, null)
+                    if (chars <= 0) break
+                    remaining = remaining.drop(chars)
+                    lines++
+                }
+                return lines.coerceAtLeast(1)
+            }
+            val firstLines = countWrappedLines(firstLine)
+            val secondLines = secondLine?.let { countWrappedLines(it) } ?: 0
+            val infoLines = firstLines + (if (secondLine != null) 1 else 0) + secondLines
+            val infoHeight = infoLines * infoLineHeight
+
+            // 整体垂直居中
+            val gap = 4f
+            val totalContentH = ringHeight + gap + maxOf(photoSize, infoHeight)
+            val startY = cellTop + (cellHeight - totalContentH) / 2f
+
+            // 脚环号绘制（上方，左对齐）
             val photoX = colX + pad
-            val photoY = cellTop + (cellHeight - photoSize) / 2f
+            val ringBaseline = startY + ringPaint.textSize * 0.85f
+            var remaining = brief.ringNumber
+            var currentY = ringBaseline
+            while (remaining.isNotEmpty()) {
+                val chars = ringPaint.breakText(remaining, true, contentW, null)
+                if (chars <= 0) break
+                canvas.drawText(remaining.take(chars), photoX, currentY, ringPaint)
+                remaining = remaining.drop(chars)
+                currentY += ringLineHeight
+            }
+
+            // 照片绘制（下方偏左）
+            val photoY = startY + ringHeight + gap
             drawPhotoOrPlaceholder(canvas, brief.photoPath, photoX, photoY, photoSize, smallBoxPaint)
 
-            val textX = photoX + photoSize + 6f
-            val textBase = photoY + photoSize / 2f
+            // 信息绘制（照片右侧，顶部对齐）
+            val infoX = photoX + photoSize + 4f
+            var infoCurrentY = photoY + infoPaint.textSize * 0.85f
 
-            // 根据可用宽度计算最大字符数（约每字符 11pt）
-            val textAreaWidth = colWidth - photoSize - pad * 3
-            val maxChars = (textAreaWidth / 11f).toInt()
+            // 第一段：性别+羽色
+            var infoRemaining = firstLine
+            while (infoRemaining.isNotEmpty()) {
+                val chars = infoPaint.breakText(infoRemaining, true, infoMaxWidth, null)
+                if (chars <= 0) break
+                canvas.drawText(infoRemaining.take(chars), infoX, infoCurrentY, infoPaint)
+                infoRemaining = infoRemaining.drop(chars)
+                infoCurrentY += infoLineHeight
+            }
 
-            val nameText = if (brief.name.length > maxChars) brief.name.take(maxChars) + "…" else brief.name
-            val ringText = if (brief.ringNumber.length > maxChars) brief.ringNumber.take(maxChars) + "…" else brief.ringNumber
-            val detailText = "${brief.gender.displayName}  ${brief.color ?: "未记录"}"
-
-            when {
-                cellHeight >= 80f -> {
-                    // 大格子：三行文字
-                    canvas.drawText(nameText, textX, textBase - 6f, valuePaint)
-                    canvas.drawText(ringText, textX, textBase + 8f, labelPaint)
-                    canvas.drawText(detailText, textX, textBase + 22f, labelPaint)
-                }
-                cellHeight >= 55f -> {
-                    // 中等格子：三行紧凑文字
-                    val nameP = Paint(valuePaint).apply { textSize = 11f }
-                    val detailP = Paint(labelPaint).apply { textSize = 9f }
-                    canvas.drawText(nameText, textX, textBase - 4f, nameP)
-                    canvas.drawText(ringText, textX, textBase + 8f, detailP)
-                    canvas.drawText(detailText, textX, textBase + 19f, detailP)
-                }
-                else -> {
-                    // 小格子：两行文字
-                    val nameP = Paint(smallValuePaint).apply { textSize = 10f }
-                    val detailP = Paint(labelPaint).apply { textSize = 9f }
-                    canvas.drawText(nameText, textX, textBase - 2f, nameP)
-                    canvas.drawText(ringText, textX, textBase + 10f, detailP)
-                    // 极小格子放不下第三行，省略性别羽色
-                    if (cellHeight >= 38f) {
-                        canvas.drawText(detailText, textX, textBase + 21f, detailP)
-                    }
+            // 第二段：成绩（强制另起一行）
+            secondLine?.let {
+                infoCurrentY += infoLineHeight // 空一行
+                var achRemaining = it
+                while (achRemaining.isNotEmpty()) {
+                    val chars = infoPaint.breakText(achRemaining, true, infoMaxWidth, null)
+                    if (chars <= 0) break
+                    canvas.drawText(achRemaining.take(chars), infoX, infoCurrentY, infoPaint)
+                    achRemaining = achRemaining.drop(chars)
+                    infoCurrentY += infoLineHeight
                 }
             }
         }

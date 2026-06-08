@@ -49,14 +49,16 @@ object TestFixtures {
         name: String = "小红",
         gender: Gender = Gender.FEMALE,
         photoPath: String? = null,
-        color: String? = "红"
+        color: String? = "红",
+        achievement: String? = null
     ) = PigeonBrief(
         id = id,
         ringNumber = ringNumber,
         name = name,
         gender = gender,
         photoPath = photoPath,
-        color = color
+        color = color,
+        achievement = achievement
     )
 
     fun createFamilyRelation(
